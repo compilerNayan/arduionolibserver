@@ -58,14 +58,14 @@ class HttpTcpServer : public IServer {
         : port_(DEFAULT_SERVER_PORT), serverSocket_(-1), running_(false),
           ipAddress_("0.0.0.0"), lastClientIp_(""), lastClientPort_(0),
           receivedMessageCount_(0), sentMessageCount_(0),
-          maxMessageSize_(8192), receiveTimeout_(0) {
+          maxMessageSize_(88192), receiveTimeout_(0) {
     }
 
     Public HttpTcpServer(CUInt port) 
         : port_(port), serverSocket_(-1), running_(false),
           ipAddress_("0.0.0.0"), lastClientIp_(""), lastClientPort_(0),
           receivedMessageCount_(0), sentMessageCount_(0),
-          maxMessageSize_(8192), receiveTimeout_(0) {
+          maxMessageSize_(88192), receiveTimeout_(0) {
     }
 
     Public Virtual ~HttpTcpServer() {
