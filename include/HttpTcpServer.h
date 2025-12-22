@@ -55,8 +55,7 @@ Private:
         sentMessageCount_++;
     }
 
-Public:
-    HttpTcpServer() 
+    Public HttpTcpServer() 
         : port_(DEFAULT_SERVER_PORT), serverSocket_(-1), running_(false),
           ipAddress_("0.0.0.0"), lastClientIp_(""), lastClientPort_(0),
           receivedMessageCount_(0), sentMessageCount_(0),
