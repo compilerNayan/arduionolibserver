@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <cstring>
 #include <sstream>
+#include <vector>
 
 /**
  * HTTP TCP Server implementation of IServer interface
@@ -171,14 +172,20 @@ class HttpTcpServer : public IServer {
         lastClientPort_ = ntohs(clientAddress.sin_port);
         
         // Receive HTTP request - read headers first
-        StdString request;
-        Char buffer[8192] = {0};
+        // Use dynamic buffer based on maxMessageSize_ (default allows up to 100MB)
+        Size bufferSize = maxMessageSize_ > 0 ? maxMessageSize_ : 104857600; // 100MB default max
+        std::vector<Char> buffer(bufferSize, 0);
         Size totalReceived = 0;
         
         // Read until we get the headers (double CRLF)
         while (true) {
-            ssize_t bytesReceived = recv(clientSocket, buffer + totalReceived, 
-                                        sizeof(buffer) - totalReceived - 1, 0);
+            Size remainingSpace = bufferSize - totalReceived - 1;
+            if (remainingSpace == 0) {
+                break; // Buffer full
+            }
+            
+            ssize_t bytesReceived = recv(clientSocket, buffer.data() + totalReceived, 
+                                        remainingSpace, 0);
             if (bytesReceived <= 0) {
                 if (totalReceived == 0) {
                     CloseSocket(clientSocket);
@@ -191,7 +198,7 @@ class HttpTcpServer : public IServer {
             buffer[totalReceived] = '\0';
             
             // Check if we've received the headers (look for double CRLF)
-            StdString currentData(buffer, totalReceived);
+            StdString currentData(buffer.data(), totalReceived);
             Size headerEnd = currentData.find("\r\n\r\n");
             if (headerEnd == StdString::npos) {
                 headerEnd = currentData.find("\n\n");
@@ -213,15 +220,29 @@ class HttpTcpServer : public IServer {
                     contentLengthStr.erase(0, contentLengthStr.find_first_not_of(" \t"));
                     contentLengthStr.erase(contentLengthStr.find_last_not_of(" \t") + 1);
                     
-                    Int contentLength = std::stoi(contentLengthStr);
+                    ULong contentLength = std::stoull(contentLengthStr);
                     Size bodyStart = headerEnd + 4; // Skip double CRLF
                     Size bodyReceived = totalReceived - bodyStart;
                     
+                    // Ensure we have enough buffer space for the full body
+                    Size requiredSize = bodyStart + contentLength;
+                    if (requiredSize > bufferSize) {
+                        // Buffer too small, resize if possible (up to maxMessageSize_)
+                        if (requiredSize <= maxMessageSize_ || maxMessageSize_ == 0) {
+                            bufferSize = requiredSize;
+                            buffer.resize(bufferSize);
+                        } else {
+                            // Content-Length exceeds maxMessageSize_, truncate
+                            contentLength = maxMessageSize_ - bodyStart;
+                        }
+                    }
+                    
                     // Read remaining body if needed
-                    while (bodyReceived < static_cast<Size>(contentLength) && 
-                           totalReceived < sizeof(buffer) - 1) {
-                        ssize_t moreBytes = recv(clientSocket, buffer + totalReceived, 
-                                                sizeof(buffer) - totalReceived - 1, 0);
+                    while (bodyReceived < contentLength && 
+                           totalReceived < bufferSize - 1) {
+                        Size remaining = bufferSize - totalReceived - 1;
+                        ssize_t moreBytes = recv(clientSocket, buffer.data() + totalReceived, 
+                                                remaining, 0);
                         if (moreBytes <= 0) break;
                         totalReceived += moreBytes;
                         bodyReceived = totalReceived - bodyStart;
@@ -231,12 +252,12 @@ class HttpTcpServer : public IServer {
             }
             
             // Prevent buffer overflow
-            if (totalReceived >= sizeof(buffer) - 1) {
+            if (totalReceived >= bufferSize - 1) {
                 break;
             }
         }
         
-        request = StdString(buffer, totalReceived);
+        StdString request(buffer.data(), totalReceived);
         
         // Send HTTP response
         SendHttpResponse(clientSocket, request);
