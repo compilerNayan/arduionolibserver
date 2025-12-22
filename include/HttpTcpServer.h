@@ -14,26 +14,25 @@
  * Header-only implementation using standard TCP sockets
  */
 class HttpTcpServer : public IServer {
-Private:
-    UInt port_;
-    Int serverSocket_;
-    Bool running_;
-    StdString ipAddress_;
-    StdString lastClientIp_;
-    UInt lastClientPort_;
-    ULong receivedMessageCount_;
-    ULong sentMessageCount_;
-    UInt maxMessageSize_;
-    UInt receiveTimeout_;
+    Private UInt port_;
+    Private Int serverSocket_;
+    Private Bool running_;
+    Private StdString ipAddress_;
+    Private StdString lastClientIp_;
+    Private UInt lastClientPort_;
+    Private ULong receivedMessageCount_;
+    Private ULong sentMessageCount_;
+    Private UInt maxMessageSize_;
+    Private UInt receiveTimeout_;
 
-    Void CloseSocket(Int& socket) {
+    Private Void CloseSocket(Int& socket) {
         if (socket >= 0) {
             close(socket);
             socket = -1;
         }
     }
 
-    Void SendHttpResponse(Int clientSocket, CStdString& request) {
+    Private Void SendHttpResponse(Int clientSocket, CStdString& request) {
         // Parse the request to extract method and path
         std::istringstream requestStream(request);
         StdString method, path, version;
@@ -62,14 +61,14 @@ Private:
           maxMessageSize_(8192), receiveTimeout_(0) {
     }
 
-    HttpTcpServer(CUInt port) 
+    Public HttpTcpServer(CUInt port) 
         : port_(port), serverSocket_(-1), running_(false),
           ipAddress_("0.0.0.0"), lastClientIp_(""), lastClientPort_(0),
           receivedMessageCount_(0), sentMessageCount_(0),
           maxMessageSize_(8192), receiveTimeout_(0) {
     }
 
-    Virtual ~HttpTcpServer() {
+    Public Virtual ~HttpTcpServer() {
         Stop();
     }
 
