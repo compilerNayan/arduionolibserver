@@ -1,10 +1,8 @@
 #ifndef HTTPREQUEST_H
 #define HTTPREQUEST_H
 
-#include "StandardDefines.h"
+#include <StandardDefines.h>
 #include "HttpMethod.h"
-#include <map>
-#include <vector>
 
 /**
  * Interface representing a complete HTTP request
@@ -47,7 +45,7 @@ class HttpRequest {
     /**
      * Get all query parameters as a map
      */
-    Public Virtual const std::map<StdString, StdString>& GetQueryParameters() const = 0;
+    Public Virtual const std_map<StdString, StdString>& GetQueryParameters() const = 0;
     
     /**
      * Check if a query parameter exists
@@ -66,7 +64,7 @@ class HttpRequest {
     /**
      * Get all headers as a map
      */
-    Public Virtual const std::map<StdString, StdString>& GetHeaders() const = 0;
+    Public Virtual const std_map<StdString, StdString>& GetHeaders() const = 0;
     
     /**
      * Check if a header exists
@@ -106,7 +104,7 @@ class HttpRequest {
     /**
      * Get the request body as bytes/raw data
      */
-    Public Virtual const std::vector<UInt8>& GetBodyBytes() const = 0;
+    Public Virtual const vector<UInt8>& GetBodyBytes() const = 0;
     
     /**
      * Get the Content-Type header value
@@ -128,7 +126,7 @@ class HttpRequest {
     /**
      * Get all cookies as a map
      */
-    Public Virtual const std::map<StdString, StdString>& GetCookies() const = 0;
+    Public Virtual const std_map<StdString, StdString>& GetCookies() const = 0;
     
     /**
      * Check if a cookie exists
