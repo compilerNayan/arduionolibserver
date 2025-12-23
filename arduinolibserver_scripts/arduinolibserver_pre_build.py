@@ -137,12 +137,9 @@ def print_library_files(libraries):
         if files:
             print(f"\nFound {len(files)} .cpp/.h files:")
             for file_path in sorted(files):
-                # Print relative path from library root
-                try:
-                    rel_path = file_path.relative_to(lib_dir)
-                    print(f"  {rel_path}")
-                except ValueError:
-                    print(f"  {file_path}")
+                # Print full absolute path
+                full_path = file_path.resolve()
+                print(f"  {full_path}")
         else:
             print("\nNo .cpp/.h files found in this library.")
     
