@@ -16,7 +16,7 @@ inline Bool Init() {
 // Define static member outside the class (inline for header-only library)
 inline std_map<StdString, std::function<IServerPtr()>> ServerFactory::serverFactories_;
 
-Init();
+bool isInit = Init();
 
 #endif // SERVERFACTORYINIT_H
 
