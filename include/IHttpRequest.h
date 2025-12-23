@@ -1,5 +1,5 @@
-#ifndef HTTPREQUEST_H
-#define HTTPREQUEST_H
+#ifndef IHTTPREQUEST_H
+#define IHTTPREQUEST_H
 
 #include <StandardDefines.h>
 #include "HttpMethod.h"
@@ -8,8 +8,8 @@
  * Interface representing a complete HTTP request
  * Contains all possible components of an HTTP request
  */
-class HttpRequest {
-    Public Virtual ~HttpRequest() = default;
+class IHttpRequest {
+    Public Virtual ~IHttpRequest() = default;
     
     // ========== Request Line Components ==========
     
@@ -199,8 +199,27 @@ class HttpRequest {
      * Get the request timestamp (when it was received)
      */
     Public Virtual ULong GetTimestamp() const = 0;
+    
+    // ========== Static Factory Method ==========
+    
+    /**
+     * Parse raw HTTP request string and create IHttpRequest object
+     * @param rawRequest The raw HTTP request string from IServer::ReceiveMessage()
+     * @return Pointer to IHttpRequest object, or nullptr if parsing fails
+     */
+    Static inline IHttpRequest* GetRequest(CStdString& rawRequest);
 };
 
-#endif // HTTPREQUEST_H
+// Include SimpleHttpRequest for inline implementation
+#include "SimpleHttpRequest.h"
 
+// Inline implementation
+inline IHttpRequest* IHttpRequest::GetRequest(CStdString& rawRequest) {
+    if (rawRequest.empty()) {
+        return nullptr;
+    }
+    return new SimpleHttpRequest(rawRequest);
+}
+
+#endif // IHTTPREQUEST_H
 
