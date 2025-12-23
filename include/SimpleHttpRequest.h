@@ -89,7 +89,7 @@ class SimpleHttpRequest : public IHttpRequest {
     }
 
 
-    PublicSimpleHttpRequest(CStdString& rawRequest) 
+    Public SimpleHttpRequest(CStdString& rawRequest) 
         : method_(HttpMethod::GET), clientPort_(0), timestamp_(0) {
         rawRequest_ = rawRequest;
         timestamp_ = static_cast<ULong>(std::time(nullptr));
