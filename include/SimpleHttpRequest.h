@@ -15,28 +15,28 @@
  * Simple concrete implementation of IHttpRequest interface
  */
 class SimpleHttpRequest : public IHttpRequest {
-Private:
-    HttpMethod method_;
-    StdString path_;
-    StdString fullUrl_;
-    StdString httpVersion_;
-    std_map<StdString, StdString> queryParameters_;
-    std_map<StdString, StdString> headers_;
-    std_map<StdString, StdString> cookies_;
-    StdString body_;
-    vector<UInt8> bodyBytes_;
-    StdString clientIp_;
-    UInt clientPort_;
-    ULong timestamp_;
-    StdString rawRequest_;
+
+    Private HttpMethod method_;
+    Private StdString path_;
+    Private StdString fullUrl_;
+    Private StdString httpVersion_;
+    Private std_map<StdString, StdString> queryParameters_;
+    Private std_map<StdString, StdString> headers_;
+    Private std_map<StdString, StdString> cookies_;
+    Private StdString body_;
+    Private vector<UInt8> bodyBytes_;
+    Private StdString clientIp_;
+    Private UInt clientPort_;
+    Private ULong timestamp_;
+    Private StdString rawRequest_;
     
-    StdString ToLower(CStdString& str) const {
+    Private StdString ToLower(CStdString& str) const {
         StdString result = str;
         std::transform(result.begin(), result.end(), result.begin(), ::tolower);
         return result;
     }
     
-    Void ParseQueryParameters(CStdString& queryString) {
+    Private Void ParseQueryParameters(CStdString& queryString) {
         if (queryString.empty()) return;
         
         Size start = 0;
@@ -57,7 +57,7 @@ Private:
         }
     }
     
-    Void ParseCookies(CStdString& cookieHeader) {
+    Private Void ParseCookies(CStdString& cookieHeader) {
         if (cookieHeader.empty()) return;
         
         Size start = 0;
@@ -88,8 +88,8 @@ Private:
         }
     }
 
-Public:
-    SimpleHttpRequest(CStdString& rawRequest) 
+
+    PublicSimpleHttpRequest(CStdString& rawRequest) 
         : method_(HttpMethod::GET), clientPort_(0), timestamp_(0) {
         rawRequest_ = rawRequest;
         timestamp_ = static_cast<ULong>(std::time(nullptr));
@@ -343,8 +343,8 @@ Public:
         return timestamp_;
     }
     
-    Void SetClientIp(CStdString& ip) { clientIp_ = ip; }
-    Void SetClientPort(CUInt port) { clientPort_ = port; }
+    Public Void SetClientIp(CStdString& ip) { clientIp_ = ip; }
+    Public Void SetClientPort(CUInt port) { clientPort_ = port; }
 };
 
 #endif // SIMPLEHTTPREQUEST_H
