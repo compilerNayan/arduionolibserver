@@ -152,7 +152,7 @@ class HttpTcpServer : public IServer {
         return true;
     }
 
-    Public Virtual IHttpRequest* ReceiveMessage() override {
+    Public Virtual IHttpRequestPtr ReceiveMessage() override {
         if (!running_ || serverSocket_ < 0) {
             return nullptr;
         }

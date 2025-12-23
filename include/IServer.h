@@ -4,8 +4,8 @@
 #include <StandardDefines.h>
 #include "ServerType.h"
 
-// Forward declaration
-class IHttpRequest;
+// Forward declaration and pointer types
+DefineStandardPointers(IHttpRequest)
 
 // Default port number if not specified
 #ifndef DEFAULT_SERVER_PORT
@@ -16,6 +16,7 @@ class IHttpRequest;
  * Interface for network servers (TCP/UDP)
  * Defines common operations that all server implementations should support
  */
+DefineStandardPointers(IServer)
 class IServer {
     Public Virtual ~IServer() = default;
     
@@ -66,9 +67,9 @@ class IServer {
     
     /**
      * Receive a message from a client
-     * @return IHttpRequest pointer, nullptr on error or no message
+     * @return IHttpRequestPtr (shared_ptr), nullptr on error or no message
      */
-    Public Virtual IHttpRequest* ReceiveMessage() = 0;
+    Public Virtual IHttpRequestPtr ReceiveMessage() = 0;
     
     /**
      * Send a message to a client
