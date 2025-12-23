@@ -1,11 +1,15 @@
 #ifndef SIMPLEHTTPREQUEST_H
 #define SIMPLEHTTPREQUEST_H
 
-#include "IHttpRequest.h"
+#include <StandardDefines.h>
 #include "HttpMethod.h"
 #include <sstream>
 #include <algorithm>
 #include <ctime>
+
+// Include IHttpRequest - if already included, the guard will prevent re-inclusion
+// but the class will be fully defined
+#include "IHttpRequest.h"
 
 /**
  * Simple concrete implementation of IHttpRequest interface
