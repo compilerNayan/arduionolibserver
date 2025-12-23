@@ -84,21 +84,23 @@ def find_all_libraries(project_dir):
 
 def get_all_files(library_dir):
     """
-    Get all files in a library directory recursively.
+    Get all .cpp and .h files in a library directory recursively.
     
     Args:
         library_dir: Path to the library directory
     
     Returns:
-        list: List of Path objects for all files
+        list: List of Path objects for .cpp and .h files only
     """
     files = []
     if not library_dir.exists() or not library_dir.is_dir():
         return files
     
     try:
+        # Filter for only .cpp and .h files
+        allowed_extensions = {'.cpp', '.h', '.hpp', '.c', '.cc', '.cxx', '.hxx'}
         for item in library_dir.rglob("*"):
-            if item.is_file():
+            if item.is_file() and item.suffix.lower() in allowed_extensions:
                 files.append(item)
     except Exception as e:
         print(f"  Warning: Error scanning {library_dir}: {e}")
@@ -108,13 +110,13 @@ def get_all_files(library_dir):
 
 def print_library_files(libraries):
     """
-    Print all files from all libraries.
+    Print all .cpp and .h files from all libraries.
     
     Args:
         libraries: List of library directory paths
     """
     print("\n" + "=" * 80)
-    print("NAYAN X LIBRARY FILES REPORT")
+    print("NAYAN X LIBRARY FILES REPORT (.cpp and .h files only)")
     print("=" * 80)
     
     if not libraries:
@@ -133,7 +135,7 @@ def print_library_files(libraries):
         total_files += len(files)
         
         if files:
-            print(f"\nFound {len(files)} files:")
+            print(f"\nFound {len(files)} .cpp/.h files:")
             for file_path in sorted(files):
                 # Print relative path from library root
                 try:
@@ -142,11 +144,11 @@ def print_library_files(libraries):
                 except ValueError:
                     print(f"  {file_path}")
         else:
-            print("\nNo files found in this library.")
+            print("\nNo .cpp/.h files found in this library.")
     
     print(f"\n{'=' * 80}")
     print(f"Total libraries: {len(libraries)}")
-    print(f"Total files across all libraries: {total_files}")
+    print(f"Total .cpp/.h files across all libraries: {total_files}")
     print("=" * 80)
 
 
