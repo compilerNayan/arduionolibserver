@@ -126,7 +126,8 @@ class ServerFactory {
     }
 };
 
+#include "ServerFactoryInit.h"
+
 #endif // SERVERFACTORY_H
 
-#include "ServerFactoryInit.h"
 
