@@ -90,7 +90,7 @@ def get_all_files(library_dir):
         library_dir: Path to the library directory
     
     Returns:
-        list: List of Path objects for .cpp and .h files only
+        list: List of Path objects with full absolute paths for .cpp and .h files only
     """
     files = []
     if not library_dir.exists() or not library_dir.is_dir():
@@ -98,10 +98,12 @@ def get_all_files(library_dir):
     
     try:
         # Filter for only .cpp and .h files
-        allowed_extensions = {'.cpp', '.h', '.hpp', '.c', '.cc', '.cxx', '.hxx'}
+        allowed_extensions = {'.h', '.hpp'}
         for item in library_dir.rglob("*"):
             if item.is_file() and item.suffix.lower() in allowed_extensions:
-                files.append(item)
+                # Resolve to full absolute path
+                full_path = item.resolve()
+                files.append(full_path)
     except Exception as e:
         print(f"  Warning: Error scanning {library_dir}: {e}")
     
@@ -137,9 +139,8 @@ def print_library_files(libraries):
         if files:
             print(f"\nFound {len(files)} .cpp/.h files:")
             for file_path in sorted(files):
-                # Print full absolute path
-                full_path = file_path.resolve()
-                print(f"  {full_path}")
+                # Print full absolute path (already resolved in get_all_files)
+                print(f"  {file_path}")
         else:
             print("\nNo .cpp/.h files found in this library.")
     
