@@ -2,6 +2,7 @@
 #define HTTPTCPSERVER_H
 
 #include "IServer.h"
+#include "IHttpRequest.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -151,9 +152,9 @@ class HttpTcpServer : public IServer {
         return true;
     }
 
-    Public Virtual StdString ReceiveMessage() override {
+    Public Virtual IHttpRequest* ReceiveMessage() override {
         if (!running_ || serverSocket_ < 0) {
-            return "";
+            return nullptr;
         }
         
         // Accept a client connection
@@ -162,7 +163,7 @@ class HttpTcpServer : public IServer {
         
         Int clientSocket = accept(serverSocket_, (struct sockaddr*)&clientAddress, &clientAddressLength);
         if (clientSocket < 0) {
-            return "";
+            return nullptr;
         }
         
         // Store client information
@@ -189,7 +190,7 @@ class HttpTcpServer : public IServer {
             if (bytesReceived <= 0) {
                 if (totalReceived == 0) {
                     CloseSocket(clientSocket);
-                    return "";
+                    return nullptr;
                 }
                 break;
             }
@@ -257,16 +258,18 @@ class HttpTcpServer : public IServer {
             }
         }
         
-        StdString request(buffer.data(), totalReceived);
+        StdString requestString(buffer.data(), totalReceived);
         
         // Send HTTP response
-        SendHttpResponse(clientSocket, request);
+        SendHttpResponse(clientSocket, requestString);
         
         // Close client socket
         CloseSocket(clientSocket);
         
         receivedMessageCount_++;
-        return request;
+        
+        // Parse and return IHttpRequest
+        return IHttpRequest::GetRequest(requestString);
     }
 
     Public Virtual Bool SendMessage(CStdString& message, 

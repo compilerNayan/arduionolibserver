@@ -4,6 +4,9 @@
 #include <StandardDefines.h>
 #include "ServerType.h"
 
+// Forward declaration
+class IHttpRequest;
+
 // Default port number if not specified
 #ifndef DEFAULT_SERVER_PORT
 #define DEFAULT_SERVER_PORT 8080
@@ -63,9 +66,9 @@ class IServer {
     
     /**
      * Receive a message from a client
-     * @return Received message as string, empty string on error or no message
+     * @return IHttpRequest pointer, nullptr on error or no message
      */
-    Public Virtual StdString ReceiveMessage() = 0;
+    Public Virtual IHttpRequest* ReceiveMessage() = 0;
     
     /**
      * Send a message to a client
