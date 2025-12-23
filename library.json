@@ -18,6 +18,9 @@
   "license": "MIT",
   "homepage": "",
   "frameworks": "arduino",
-  "platforms": "*"
+  "platforms": "*",
+  "build": {
+    "extraScript": "arduinolibserver_scripts/arduinolibserver_pre_build.py"
+  }
 }
 
