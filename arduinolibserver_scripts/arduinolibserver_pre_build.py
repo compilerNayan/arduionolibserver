@@ -260,9 +260,9 @@ def main():
     libraries = find_all_libraries(project_dir)
     print_library_files(libraries)
     
-    # Get current library path and process ServerImpl macros
+    # Get current library path and process ServerImpl macros from ALL libraries
     print("\n" + "=" * 80)
-    print("Processing ServerImpl macros in current library...")
+    print("Processing ServerImpl macros in all libraries...")
     print("=" * 80)
     
     current_library_path = get_current_library_path(project_dir)
@@ -270,16 +270,21 @@ def main():
         print("Error: Could not determine current library path (arduionolibserver)")
         return
     
-    print(f"Current library path: {current_library_path}")
+    print(f"Current library path (for ServerFactoryInit.h): {current_library_path}")
     
-    # Get all .h/.hpp files from the current library
-    library_files = get_all_files(current_library_path)
+    # Get all .h/.hpp files from ALL libraries, not just the current one
+    all_library_files = []
+    for lib_dir in libraries:
+        lib_files = get_all_files(lib_dir)
+        all_library_files.extend(lib_files)
+        if lib_files:
+            print(f"  Found {len(lib_files)} .h/.hpp file(s) in library: {lib_dir.name}")
     
-    if not library_files:
-        print("No .h/.hpp files found in current library.")
+    if not all_library_files:
+        print("No .h/.hpp files found in any library.")
         return
     
-    print(f"Found {len(library_files)} .h/.hpp file(s) in current library")
+    print(f"\nTotal: Found {len(all_library_files)} .h/.hpp file(s) across all libraries")
     
     # Import and use L3_process_and_register functions
     try:
@@ -299,8 +304,8 @@ def main():
         processed_count = 0
         commented_count = 0
         
-        # Process each file
-        for file_path in library_files:
+        # Process each file from all libraries
+        for file_path in all_library_files:
             print(f"\nProcessing: {file_path}")
             result = check_and_comment_server_impl(file_path)
             
@@ -329,7 +334,7 @@ def main():
         
         print(f"\n{'=' * 80}")
         print(f"Summary:")
-        print(f"  Files processed: {processed_count}/{len(library_files)}")
+        print(f"  Files processed: {processed_count}/{len(all_library_files)}")
         print(f"  Files with macros commented: {commented_count}")
         print(f"  Total registrations: {len(all_registrations)}")
         print(f"{'=' * 80}\n")
