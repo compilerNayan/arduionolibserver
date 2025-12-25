@@ -9,8 +9,7 @@
  * @return true if initialization was successful, false if server already registered
  */
 inline Bool Init() {
-    StdString httpTcpServerGuid = "550e8400-e29b-41d4-a716-446655440000";
-    return ServerFactory::RegisterServer<HttpTcpServer>(httpTcpServerGuid);
+    return false;
 }
 
 // Define static member outside the class (inline for header-only library)
