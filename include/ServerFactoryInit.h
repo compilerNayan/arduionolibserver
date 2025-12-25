@@ -9,7 +9,8 @@
  * @return true if initialization was successful, false if server already registered
  */
 inline Bool Init() {
-    return false;
+    ServerFactory::RegisterServer<SomeServer>("my xyz server");
+    return true;
 }
 
 // Define static member outside the class (inline for header-only library)
