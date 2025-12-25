@@ -169,8 +169,11 @@ def find_all_libraries(project_dir):
         print(f"\nSearching CMake libraries in: {cmake_deps}")
         for lib_dir in cmake_deps.iterdir():
             if lib_dir.is_dir() and not lib_dir.name.startswith("."):
-                libraries.append(lib_dir)
-                print(f"  Found CMake library: {lib_dir.name} at {lib_dir}")
+                # Only include -src directories (source libraries) or directories with include/ folder
+                # Skip -build and -subbuild directories
+                if lib_dir.name.endswith("-src") or (lib_dir / "include").exists():
+                    libraries.append(lib_dir)
+                    print(f"  Found CMake library: {lib_dir.name} at {lib_dir}")
     
     return libraries
 
