@@ -202,6 +202,8 @@ def get_all_files(library_dir):
                 files.append(full_path)
     except Exception as e:
         print(f"  Warning: Error scanning {library_dir}: {e}")
+        import traceback
+        print(f"  Traceback: {traceback.format_exc()}")
     
     return files
 
@@ -281,7 +283,20 @@ def main():
         lib_files = get_all_files(lib_dir)
         all_library_files.extend(lib_files)
         if lib_files:
-            print(f"  Found {len(lib_files)} .h/.hpp file(s) in library: {lib_dir.name}")
+            print(f"  Found {len(lib_files)} .h/.hpp file(s) in library: {lib_dir.name} at {lib_dir}")
+        else:
+            # Debug: print even if no files found, especially for libraries we expect to have files
+            if "arduinodesktopserver" in lib_dir.name.lower():
+                print(f"  DEBUG: Library {lib_dir.name} at {lib_dir} - no files found")
+                print(f"    Library exists: {lib_dir.exists()}")
+                print(f"    Is directory: {lib_dir.is_dir() if lib_dir.exists() else 'N/A'}")
+                include_dir = lib_dir / "include"
+                print(f"    Include dir exists: {include_dir.exists()}")
+                if include_dir.exists():
+                    http_file = include_dir / "HttpTcpServer.h"
+                    print(f"    HttpTcpServer.h exists: {http_file.exists()}")
+                    if http_file.exists():
+                        print(f"    HttpTcpServer.h path: {http_file}")
     
     if not all_library_files:
         print("No .h/.hpp files found in any library.")
