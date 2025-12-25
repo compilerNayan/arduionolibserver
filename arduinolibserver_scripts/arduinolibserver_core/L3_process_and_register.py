@@ -122,19 +122,18 @@ def check_and_comment_server_impl(file_path):
 
 def generate_include_statements(registrations, library_dir):
     """
-    Generate #include statements for all class files.
+    Generate #include statements for all class files using full absolute paths.
     
     Args:
         registrations: List of dicts with 'file_path'
-        library_dir: Path to the library directory (to make relative paths)
+        library_dir: Path to the library directory (not used, kept for compatibility)
     
     Returns:
-        str: Generated #include statements
+        str: Generated #include statements with full absolute paths
     """
     if not registrations:
         return ""
     
-    library_dir = Path(library_dir).resolve()
     includes = []
     seen_paths = set()
     
@@ -146,21 +145,8 @@ def generate_include_statements(registrations, library_dir):
             continue
         seen_paths.add(str(file_path))
         
-        # Try to make path relative to library_dir/include
-        include_dir = library_dir / "include"
-        try:
-            # Try relative to include directory first
-            rel_path = file_path.relative_to(include_dir)
-            include_path = f'"{rel_path}"'
-        except ValueError:
-            try:
-                # Try relative to library directory
-                rel_path = file_path.relative_to(library_dir)
-                include_path = f'"{rel_path}"'
-            except ValueError:
-                # Use absolute path if can't make relative
-                include_path = f'<{file_path}>'
-        
+        # Use full absolute path
+        include_path = f'"{file_path}"'
         includes.append(f'#include {include_path}')
     
     return '\n'.join(includes)
