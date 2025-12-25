@@ -98,10 +98,13 @@ def check_and_comment_server_impl(file_path):
                         result['modified'] = True
                     
                     # Store match information
+                    # Resolve to full absolute path
+                    full_file_path = file_path.resolve()
                     match_info = {
                         'line_number': i + 1,
                         'class_name': class_name,
-                        'server_impl_content': extracted_content
+                        'server_impl_content': extracted_content,
+                        'file_path': str(full_file_path)  # Full absolute path
                     }
                     result['matches'].append(match_info)
                     result['found'] = True
@@ -115,6 +118,52 @@ def check_and_comment_server_impl(file_path):
         result['error'] = f"Error processing file: {str(e)}"
     
     return result
+
+
+def generate_include_statements(registrations, library_dir):
+    """
+    Generate #include statements for all class files.
+    
+    Args:
+        registrations: List of dicts with 'file_path'
+        library_dir: Path to the library directory (to make relative paths)
+    
+    Returns:
+        str: Generated #include statements
+    """
+    if not registrations:
+        return ""
+    
+    library_dir = Path(library_dir).resolve()
+    includes = []
+    seen_paths = set()
+    
+    for reg in registrations:
+        file_path = Path(reg['file_path']).resolve()
+        
+        # Skip if we've already included this file
+        if str(file_path) in seen_paths:
+            continue
+        seen_paths.add(str(file_path))
+        
+        # Try to make path relative to library_dir/include
+        include_dir = library_dir / "include"
+        try:
+            # Try relative to include directory first
+            rel_path = file_path.relative_to(include_dir)
+            include_path = f'"{rel_path}"'
+        except ValueError:
+            try:
+                # Try relative to library directory
+                rel_path = file_path.relative_to(library_dir)
+                include_path = f'"{rel_path}"'
+            except ValueError:
+                # Use absolute path if can't make relative
+                include_path = f'<{file_path}>'
+        
+        includes.append(f'#include {include_path}')
+    
+    return '\n'.join(includes)
 
 
 def generate_registration_code(registrations):
@@ -142,13 +191,14 @@ def generate_registration_code(registrations):
     return '\n'.join(lines)
 
 
-def update_server_factory_init(library_dir, registration_code):
+def update_server_factory_init(library_dir, registration_code, include_statements):
     """
-    Update ServerFactoryInit.h with the generated registration code.
+    Update ServerFactoryInit.h with the generated include statements and registration code.
     
     Args:
         library_dir: Path to the library directory
         registration_code: The generated C++ code to insert
+        include_statements: The generated #include statements
     
     Returns:
         dict: Dictionary with 'success' (bool) and 'error' (str if any)
@@ -177,11 +227,44 @@ def update_server_factory_init(library_dir, registration_code):
             re.MULTILINE | re.DOTALL
         )
         
-        # Replace the placeholder
+        # Replace the placeholder with includes + registration code
+        # First, add includes before the Init() function
+        if include_statements:
+            # Find the position of the Init() function
+            init_match = pattern.search(content)
+            if init_match:
+                # Find the line before Init() function (usually a comment or blank line)
+                init_start = init_match.start()
+                # Look backwards to find where to insert includes (after last #include or after comment block)
+                # Find the last #include or /** comment
+                last_include_pos = content.rfind('#include', 0, init_start)
+                last_comment_pos = content.rfind('/**', 0, init_start)
+                
+                # Insert after the last #include or after the comment block
+                if last_include_pos != -1:
+                    # Find the end of the last #include line
+                    insert_pos = content.find('\n', last_include_pos) + 1
+                    # Skip any blank lines
+                    while insert_pos < init_start and content[insert_pos:insert_pos+1].strip() == '':
+                        insert_pos += 1
+                    content = content[:insert_pos] + include_statements + '\n\n' + content[insert_pos:]
+                elif last_comment_pos != -1:
+                    # Find the end of the comment block (look for */)
+                    comment_end = content.find('*/', last_comment_pos) + 2
+                    insert_pos = content.find('\n', comment_end) + 1
+                    # Skip any blank lines
+                    while insert_pos < init_start and content[insert_pos:insert_pos+1].strip() == '':
+                        insert_pos += 1
+                    content = content[:insert_pos] + include_statements + '\n\n' + content[insert_pos:]
+                else:
+                    # Insert right before Init() function
+                    content = content[:init_start] + include_statements + '\n\n' + content[init_start:]
+        
+        # Now replace the Init() function body
         replacement = r'\1\n' + registration_code + r'\2'
         new_content = pattern.sub(replacement, content)
         
-        if new_content == content:
+        if new_content == content and not include_statements:
             result['error'] = "Could not find placeholder Init() function to replace"
             return result
         
@@ -235,7 +318,8 @@ def main():
             for match in result['matches']:
                 all_registrations.append({
                     'class_name': match['class_name'],
-                    'server_impl_content': match['server_impl_content']
+                    'server_impl_content': match['server_impl_content'],
+                    'file_path': match.get('file_path', '')  # Include file path
                 })
                 print(f"    - Class: {match['class_name']}, ServerImpl: \"{match['server_impl_content']}\"")
         else:
@@ -252,8 +336,17 @@ def main():
         print("No ServerImpl macros found. Nothing to register.")
         sys.exit(0)
     
+    # Generate include statements
+    print("Generating include statements...")
+    include_statements = generate_include_statements(all_registrations, library_dir)
+    if include_statements:
+        print("Generated includes:")
+        print("-" * 80)
+        print(include_statements)
+        print("-" * 80)
+    
     # Generate registration code
-    print("Generating registration code...")
+    print("\nGenerating registration code...")
     registration_code = generate_registration_code(all_registrations)
     print("Generated code:")
     print("-" * 80)
@@ -262,7 +355,7 @@ def main():
     
     # Update ServerFactoryInit.h
     print(f"\nUpdating ServerFactoryInit.h...")
-    result = update_server_factory_init(library_dir, registration_code)
+    result = update_server_factory_init(library_dir, registration_code, include_statements)
     
     if result['error']:
         print(f"Error: {result['error']}")

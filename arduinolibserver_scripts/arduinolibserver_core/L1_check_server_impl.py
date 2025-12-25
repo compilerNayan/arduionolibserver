@@ -42,6 +42,9 @@ def check_server_impl(file_path):
             result['error'] = f"Path is not a file: {file_path}"
             return result
         
+        # Resolve to full absolute path
+        full_file_path = file_path.resolve()
+        
         # Read the file content
         with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
             lines = f.readlines()
@@ -89,7 +92,8 @@ def check_server_impl(file_path):
                             'class_line': lines[j].strip(),
                             'class_name': class_name,
                             'server_impl_macro': server_impl_full,
-                            'server_impl_content': extracted_content
+                            'server_impl_content': extracted_content,
+                            'file_path': str(full_file_path)  # Full absolute path
                         }
                         result['matches'].append(match_info)
                         result['found'] = True
@@ -119,6 +123,7 @@ def main():
         print(f"✓ Found {len(result['matches'])} ServerImpl macro(s) in {file_path}")
         for i, match in enumerate(result['matches'], 1):
             print(f"\nMatch {i}:")
+            print(f"  File path: {match['file_path']}")
             print(f"  Line {match['line_number']}: {match['server_impl_line']}")
             print(f"  ServerImpl content: {match['server_impl_content']}")
             print(f"  Class: {match['class_name']}")

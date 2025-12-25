@@ -242,7 +242,7 @@ def main():
         core_scripts_dir = Path(__file__).parent / "arduinolibserver_core"
         sys.path.insert(0, str(core_scripts_dir))
         
-        from L3_process_and_register import check_and_comment_server_impl, generate_registration_code, update_server_factory_init
+        from L3_process_and_register import check_and_comment_server_impl, generate_registration_code, generate_include_statements, update_server_factory_init
         
         all_registrations = []
         processed_count = 0
@@ -269,7 +269,8 @@ def main():
                 for match in result['matches']:
                     all_registrations.append({
                         'class_name': match['class_name'],
-                        'server_impl_content': match['server_impl_content']
+                        'server_impl_content': match['server_impl_content'],
+                        'file_path': match.get('file_path', '')  # Include file path
                     })
                     print(f"    - Class: {match['class_name']}, ServerImpl: \"{match['server_impl_content']}\"")
             else:
@@ -283,8 +284,17 @@ def main():
         print(f"{'=' * 80}\n")
         
         if all_registrations:
+            # Generate include statements
+            print("Generating include statements...")
+            include_statements = generate_include_statements(all_registrations, current_library_path)
+            if include_statements:
+                print("Generated includes:")
+                print("-" * 80)
+                print(include_statements)
+                print("-" * 80)
+            
             # Generate registration code
-            print("Generating registration code...")
+            print("\nGenerating registration code...")
             registration_code = generate_registration_code(all_registrations)
             print("Generated code:")
             print("-" * 80)
@@ -293,7 +303,7 @@ def main():
             
             # Update ServerFactoryInit.h
             print(f"\nUpdating ServerFactoryInit.h...")
-            result = update_server_factory_init(current_library_path, registration_code)
+            result = update_server_factory_init(current_library_path, registration_code, include_statements)
             
             if result['error']:
                 print(f"Error: {result['error']}")
