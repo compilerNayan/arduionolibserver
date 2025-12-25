@@ -51,8 +51,10 @@ def get_current_library_path(project_dir=None):
     """
     Get the full path of the current library (arduionolibserver).
     
-    This function first tries to find the library by locating the script's directory,
-    then optionally searches in the project's libraries if not found.
+    This function tries multiple methods to find the library:
+    1. Uses PlatformIO env if available (LIB_PATH or similar)
+    2. Uses __file__ if available (normal Python execution)
+    3. Searches in project libraries
     
     Args:
         project_dir: Optional project directory to search in libraries list
@@ -60,36 +62,79 @@ def get_current_library_path(project_dir=None):
     Returns:
         Path: Path object pointing to the arduionolibserver library directory, or None if not found
     """
-    # Method 1: Find by script location (most reliable)
-    # The script is at arduinolibserver_scripts/arduinolibserver_pre_build.py
-    # So the library root is the parent of arduinolibserver_scripts
-    script_path = Path(__file__).resolve()
-    scripts_dir = script_path.parent
-    library_dir = scripts_dir.parent
+    # Method 1: Try PlatformIO environment (when running in PlatformIO)
+    # When PlatformIO executes the script, it provides the library path
+    if env:
+        # Try to get library path from env - PlatformIO may set this
+        lib_path = env.get("LIB_PATH", None)
+        if lib_path:
+            lib_path = Path(lib_path)
+            if lib_path.exists() and (lib_path / "include").exists():
+                return lib_path.resolve()
+        
+        # Also try PROJECT_LIBDEPS_DIR
+        lib_dir = env.get("PROJECT_LIBDEPS_DIR", None)
+        if lib_dir:
+            # Look for arduionolibserver in libdeps
+            libdeps_path = Path(lib_dir)
+            if libdeps_path.exists():
+                for platform_dir in libdeps_path.iterdir():
+                    if platform_dir.is_dir():
+                        for lib_dir in platform_dir.iterdir():
+                            if lib_dir.is_dir() and "arduionolibserver" in lib_dir.name.lower():
+                                if (lib_dir / "include").exists() and (lib_dir / "library.json").exists():
+                                    try:
+                                        lib_json_path = lib_dir / "library.json"
+                                        with open(lib_json_path, 'r') as f:
+                                            lib_data = json.load(f)
+                                            if lib_data.get("name") == "arduionolibserver":
+                                                return lib_dir.resolve()
+                                    except Exception:
+                                        pass
     
-    # Check if this looks like the right library (has include/ and library.json)
-    if library_dir.exists() and (library_dir / "include").exists() and (library_dir / "library.json").exists():
-        # Verify it's arduionolibserver by checking library.json
+    # Method 2: Find by script location (when __file__ is available)
+    # Use globals().get() to safely check for __file__ without raising NameError
+    script_file = globals().get('__file__', None)
+    if script_file:
         try:
-            lib_json_path = library_dir / "library.json"
-            if lib_json_path.exists():
-                with open(lib_json_path, 'r') as f:
-                    lib_data = json.load(f)
-                    if lib_data.get("name") == "arduionolibserver":
-                        return library_dir.resolve()
+            script_path = Path(script_file).resolve()
+            scripts_dir = script_path.parent
+            library_dir = scripts_dir.parent
+            
+            # Check if this looks like the right library (has include/ and library.json)
+            if library_dir.exists() and (library_dir / "include").exists() and (library_dir / "library.json").exists():
+                # Verify it's arduionolibserver by checking library.json
+                try:
+                    lib_json_path = library_dir / "library.json"
+                    if lib_json_path.exists():
+                        with open(lib_json_path, 'r') as f:
+                            lib_data = json.load(f)
+                            if lib_data.get("name") == "arduionolibserver":
+                                return library_dir.resolve()
+                except Exception:
+                    pass
         except Exception:
+            # Any error accessing __file__ - skip this method
             pass
     
-    # Method 2: Search in project libraries if project_dir is provided
+    # Method 3: Search in project libraries if project_dir is provided
     if project_dir:
         libraries = find_all_libraries(project_dir)
         for lib_dir in libraries:
             lib_name = lib_dir.name
             # Check for various naming patterns (arduionolibserver, arduionolibserver-src, etc.)
             if "arduionolibserver" in lib_name.lower():
-                # Verify by checking for include/ directory
-                if (lib_dir / "include").exists():
-                    return lib_dir.resolve()
+                # Verify by checking for include/ directory and library.json
+                if (lib_dir / "include").exists() and (lib_dir / "library.json").exists():
+                    try:
+                        lib_json_path = lib_dir / "library.json"
+                        with open(lib_json_path, 'r') as f:
+                            lib_data = json.load(f)
+                            if lib_data.get("name") == "arduionolibserver":
+                                return lib_dir.resolve()
+                    except Exception:
+                        # If can't read library.json, still return if has include/
+                        return lib_dir.resolve()
     
     return None
 
