@@ -284,7 +284,13 @@ def main():
     # Import and use L3_process_and_register functions
     try:
         # Add the core scripts directory to path
-        core_scripts_dir = Path(__file__).parent / "arduinolibserver_core"
+        # Use safe method to get script directory
+        script_file = globals().get('__file__', None)
+        if script_file:
+            core_scripts_dir = Path(script_file).parent / "arduinolibserver_core"
+        else:
+            # Fallback: use current_library_path to find scripts directory
+            core_scripts_dir = current_library_path / "arduinolibserver_scripts" / "arduinolibserver_core"
         sys.path.insert(0, str(core_scripts_dir))
         
         from L3_process_and_register import check_and_comment_server_impl, generate_registration_code, generate_include_statements, update_server_factory_init
