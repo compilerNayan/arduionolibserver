@@ -1,8 +1,6 @@
 #ifndef SERVERFACTORYINIT_H
 #define SERVERFACTORYINIT_H
 
-#include "HttpTcpServer.h"
-
 /**
  * Initialize the factory with default server types
  * Registers HttpTcpServer with GUID "550e8400-e29b-41d4-a716-446655440000"
