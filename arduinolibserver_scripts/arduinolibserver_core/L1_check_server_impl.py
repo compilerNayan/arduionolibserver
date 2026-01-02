@@ -15,15 +15,6 @@ import sys
 import re
 from pathlib import Path
 
-# Import debug utility
-try:
-    from debug_utils import debug_print
-except ImportError:
-    # Fallback if debug_utils not found - create a no-op function
-    def debug_print(*args, **kwargs):
-        pass
-
-
 
 def check_server_impl(file_path):
     """
@@ -125,29 +116,29 @@ def check_server_impl(file_path):
 def main():
     """Main function to run the script from command line."""
     if len(sys.argv) < 2:
-        debug_print("Usage: python check_server_impl.py <file_path>")
-        debug_print("Example: python check_server_impl.py /path/to/file.h")
+        print("Usage: python check_server_impl.py <file_path>")
+        print("Example: python check_server_impl.py /path/to/file.h")
         sys.exit(1)
     
     file_path = sys.argv[1]
     result = check_server_impl(file_path)
     
     if result['error']:
-        debug_print(f"Error: {result['error']}")
+        print(f"Error: {result['error']}")
         sys.exit(1)
     
     if result['found']:
-        debug_print(f"✓ Found {len(result['matches'])} @ServerImpl annotation(s) in {file_path}")
+        print(f"✓ Found {len(result['matches'])} @ServerImpl annotation(s) in {file_path}")
         for i, match in enumerate(result['matches'], 1):
-            debug_print(f"\nMatch {i}:")
-            debug_print(f"  File path: {match['file_path']}")
-            debug_print(f"  Line {match['line_number']}: {match['server_impl_line']}")
-            debug_print(f"  @ServerImpl content: {match['server_impl_content']}")
-            debug_print(f"  Class: {match['class_name']}")
-            debug_print(f"  Class line: {match['class_line']}")
+            print(f"\nMatch {i}:")
+            print(f"  File path: {match['file_path']}")
+            print(f"  Line {match['line_number']}: {match['server_impl_line']}")
+            print(f"  @ServerImpl content: {match['server_impl_content']}")
+            print(f"  Class: {match['class_name']}")
+            print(f"  Class line: {match['class_line']}")
         sys.exit(0)
     else:
-        debug_print(f"✗ No @ServerImpl annotation found above IServer class in {file_path}")
+        print(f"✗ No @ServerImpl annotation found above IServer class in {file_path}")
         sys.exit(1)
 
 

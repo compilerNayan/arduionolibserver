@@ -9,15 +9,6 @@ import sys
 import re
 from pathlib import Path
 
-# Import debug utility
-try:
-    from debug_utils import debug_print
-except ImportError:
-    # Fallback if debug_utils not found - create a no-op function
-    def debug_print(*args, **kwargs):
-        pass
-
-
 
 def comment_server_impl(file_path, dry_run=False):
     """
@@ -116,35 +107,35 @@ def comment_server_impl(file_path, dry_run=False):
 def main():
     """Main function to run the script from command line."""
     if len(sys.argv) < 2:
-        debug_print("Usage: python L2_comment_server_impl.py <file_path> [--dry-run]")
-        debug_print("Example: python L2_comment_server_impl.py /path/to/file.h")
-        debug_print("         python L2_comment_server_impl.py /path/to/file.h --dry-run")
+        print("Usage: python L2_comment_server_impl.py <file_path> [--dry-run]")
+        print("Example: python L2_comment_server_impl.py /path/to/file.h")
+        print("         python L2_comment_server_impl.py /path/to/file.h --dry-run")
         sys.exit(1)
     
     file_path = sys.argv[1]
     dry_run = '--dry-run' in sys.argv or '-n' in sys.argv
     
     if dry_run:
-        debug_print("DRY RUN MODE - No changes will be made to the file\n")
+        print("DRY RUN MODE - No changes will be made to the file\n")
     
     result = comment_server_impl(file_path, dry_run=dry_run)
     
     if result['error']:
-        debug_print(f"Error: {result['error']}")
+        print(f"Error: {result['error']}")
         sys.exit(1)
     
     if result['modified']:
         action = "Would mark" if dry_run else "Marked"
-        debug_print(f"✓ {action} {len(result['commented_lines'])} @ServerImpl annotation(s) as processed in {file_path}")
+        print(f"✓ {action} {len(result['commented_lines'])} @ServerImpl annotation(s) as processed in {file_path}")
         for item in result['commented_lines']:
-            debug_print(f"\n  Line {item['line_number']}:")
-            debug_print(f"    Original: {item['original']}")
-            debug_print(f"    {'Would be' if dry_run else 'Now'}: {item['commented']}")
+            print(f"\n  Line {item['line_number']}:")
+            print(f"    Original: {item['original']}")
+            print(f"    {'Would be' if dry_run else 'Now'}: {item['commented']}")
         if not dry_run:
-            debug_print(f"\n✓ File saved successfully")
+            print(f"\n✓ File saved successfully")
         sys.exit(0)
     else:
-        debug_print(f"✗ No @ServerImpl annotations found to process in {file_path}")
+        print(f"✗ No @ServerImpl annotations found to process in {file_path}")
         sys.exit(0)
 
 
