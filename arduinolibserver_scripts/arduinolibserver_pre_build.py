@@ -265,9 +265,9 @@ def main():
     libraries = find_all_libraries(project_dir)
     print_library_files(libraries)
     
-    # Get current library path and process ServerImpl macros from ALL libraries
+    # Get current library path and process @ServerImpl annotations from ALL libraries
     print("\n" + "=" * 80)
-    print("Processing ServerImpl macros in all libraries...")
+    print("Processing @ServerImpl annotations in all libraries...")
     print("=" * 80)
     
     current_library_path = get_current_library_path(project_dir)
@@ -335,9 +335,9 @@ def main():
                 processed_count += 1
                 if result['modified']:
                     commented_count += 1
-                    print(f"  ✓ Commented out {len(result['matches'])} ServerImpl macro(s)")
+                    print(f"  ✓ Marked {len(result['matches'])} @ServerImpl annotation(s) as processed")
                 else:
-                    print(f"  ✓ Found {len(result['matches'])} ServerImpl macro(s) (already commented)")
+                    print(f"  ✓ Found {len(result['matches'])} @ServerImpl annotation(s) (already processed)")
                 
                 # Add registrations to the list
                 for match in result['matches']:
@@ -346,14 +346,14 @@ def main():
                         'server_impl_content': match['server_impl_content'],
                         'file_path': match.get('file_path', '')  # Include file path
                     })
-                    print(f"    - Class: {match['class_name']}, ServerImpl: \"{match['server_impl_content']}\"")
+                    print(f"    - Class: {match['class_name']}, @ServerImpl: \"{match['server_impl_content']}\"")
             else:
-                print(f"  - No ServerImpl macro found")
+                print(f"  - No @ServerImpl annotation found")
         
         print(f"\n{'=' * 80}")
         print(f"Summary:")
         print(f"  Files processed: {processed_count}/{len(all_library_files)}")
-        print(f"  Files with macros commented: {commented_count}")
+        print(f"  Files with annotations processed: {commented_count}")
         print(f"  Total registrations: {len(all_registrations)}")
         print(f"{'=' * 80}\n")
         
@@ -386,12 +386,12 @@ def main():
             else:
                 print(f"✗ Failed to update ServerFactoryInit.h")
         else:
-            print("No ServerImpl macros found. Nothing to register.")
+            print("No @ServerImpl annotations found. Nothing to register.")
     
     except ImportError as e:
         print(f"Error: Could not import L3_process_and_register functions: {e}")
     except Exception as e:
-        print(f"Error processing ServerImpl macros: {e}")
+        print(f"Error processing @ServerImpl annotations: {e}")
 
 
 # Execute main function

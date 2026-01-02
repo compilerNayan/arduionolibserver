@@ -1,8 +1,8 @@
 """
-Script to comment out ServerImpl macro in a given file.
+Script to mark @ServerImpl annotation as processed in a given file.
 
-The script finds ServerImpl macros above classes that inherit from IServer
-and comments them out using C++ style comments (//).
+The script finds @ServerImpl annotations above classes that inherit from IServer
+and marks them as processed by replacing /// @ServerImpl(...) with /* @ServerImpl(...) */.
 """
 
 import sys
@@ -12,7 +12,7 @@ from pathlib import Path
 
 def comment_server_impl(file_path, dry_run=False):
     """
-    Comment out ServerImpl macro in a file.
+    Mark @ServerImpl annotation as processed in a file.
     
     Args:
         file_path: Path to the file to modify (can be string or Path object)
@@ -41,19 +41,28 @@ def comment_server_impl(file_path, dry_run=False):
         with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
             lines = f.readlines()
         
-        # Pattern to match ServerImpl macro
-        server_impl_pattern = re.compile(r'(\s*)(ServerImpl\s*\([^)]*\))')
+        # Pattern to match @ServerImpl annotation
+        # Pattern: /// @ServerImpl("content") or ///@ServerImpl("content") (ignoring whitespace)
+        # Also check for already processed /* @ServerImpl("content") */ pattern
+        server_impl_annotation_pattern = re.compile(r'(\s*)(///\s*@ServerImpl\s*\(([^)]*)\))')
+        server_impl_processed_pattern = re.compile(r'/\*\s*@ServerImpl\s*\([^)]*\)\s*\*/')
         class_pattern = re.compile(r'class\s+(\w+)(?:\s+final)?\s*:\s*public\s+IServer')
         
         modified_lines = lines.copy()
         lines_to_comment = []
         
-        # Check each line for ServerImpl macro
+        # Check each line for @ServerImpl annotation
         for i, line in enumerate(lines):
-            # Check if current line has ServerImpl macro
-            server_impl_match = server_impl_pattern.search(line)
+            stripped_line = line.strip()
+            
+            # Skip already processed annotations
+            if server_impl_processed_pattern.search(stripped_line):
+                continue
+            
+            # Check if current line has @ServerImpl annotation
+            server_impl_match = server_impl_annotation_pattern.search(stripped_line)
             if server_impl_match:
-                # Check if this ServerImpl is followed by a class that inherits from IServer
+                # Check if this @ServerImpl is followed by a class that inherits from IServer
                 # Look ahead up to 5 lines (to handle comments or blank lines)
                 found_class = False
                 for j in range(i + 1, min(i + 6, len(lines))):
@@ -62,22 +71,25 @@ def comment_server_impl(file_path, dry_run=False):
                         found_class = True
                         break
                 
-                # Only comment if it's followed by a matching class
+                # Only process if it's followed by a matching class
                 if found_class:
-                    # Check if already commented
-                    stripped = line.lstrip()
-                    if not stripped.startswith('//'):
-                        # Preserve indentation and comment out
+                    # Check if already processed
+                    if not server_impl_processed_pattern.search(stripped_line):
+                        # Preserve indentation and replace with processed marker
                         indent = server_impl_match.group(1)
-                        macro = server_impl_match.group(2)
-                        commented_line = f"{indent}// {macro}\n"
-                        modified_lines[i] = commented_line
-                        lines_to_comment.append({
-                            'line_number': i + 1,
-                            'original': line.rstrip('\n'),
-                            'commented': commented_line.rstrip('\n')
-                        })
-                        result['modified'] = True
+                        annotation_content = server_impl_match.group(2)
+                        # Extract the content part (the part inside parentheses)
+                        content_match = re.search(r'\(([^)]*)\)', annotation_content)
+                        if content_match:
+                            content_part = content_match.group(1)
+                            processed_line = f"{indent}/* @ServerImpl({content_part}) */\n"
+                            modified_lines[i] = processed_line
+                            lines_to_comment.append({
+                                'line_number': i + 1,
+                                'original': line.rstrip('\n'),
+                                'commented': processed_line.rstrip('\n')
+                            })
+                            result['modified'] = True
         
         # Write the modified content if not dry run
         if result['modified'] and not dry_run:
@@ -113,8 +125,8 @@ def main():
         sys.exit(1)
     
     if result['modified']:
-        action = "Would comment" if dry_run else "Commented"
-        print(f"✓ {action} {len(result['commented_lines'])} ServerImpl macro(s) in {file_path}")
+        action = "Would mark" if dry_run else "Marked"
+        print(f"✓ {action} {len(result['commented_lines'])} @ServerImpl annotation(s) as processed in {file_path}")
         for item in result['commented_lines']:
             print(f"\n  Line {item['line_number']}:")
             print(f"    Original: {item['original']}")
@@ -123,7 +135,7 @@ def main():
             print(f"\n✓ File saved successfully")
         sys.exit(0)
     else:
-        print(f"✗ No ServerImpl macros found to comment in {file_path}")
+        print(f"✗ No @ServerImpl annotations found to process in {file_path}")
         sys.exit(0)
 
 
