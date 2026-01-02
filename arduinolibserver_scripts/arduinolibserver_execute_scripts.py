@@ -7,6 +7,15 @@ import sys
 import os
 from pathlib import Path
 
+# Import debug utility
+try:
+    from debug_utils import debug_print
+except ImportError:
+    # Fallback if debug_utils not found - create a no-op function
+    def debug_print(*args, **kwargs):
+        pass
+
+
 
 def get_project_dir():
     """
@@ -74,7 +83,7 @@ def get_all_files(library_dir):
             if item.is_file():
                 files.append(item)
     except Exception as e:
-        print(f"  Warning: Error scanning {library_dir}: {e}")
+        debug_print(f"  Warning: Error scanning {library_dir}: {e}")
     
     return files
 
@@ -87,48 +96,48 @@ def execute_scripts(project_dir, library_dir):
         project_dir: Path to the client project root (where platformio.ini is)
         library_dir: Path to the library directory (not used in this implementation)
     """
-    print(f"\nproject_dir: {project_dir}")
-    print(f"library_dir: {library_dir}")
+    debug_print(f"\nproject_dir: {project_dir}")
+    debug_print(f"library_dir: {library_dir}")
     
     if not project_dir:
-        print("Error: Project directory not provided")
+        debug_print("Error: Project directory not provided")
         return
     
     libraries = find_all_libraries(project_dir)
     
-    print("\n" + "=" * 80)
-    print("LIBRARY FILES REPORT")
-    print("=" * 80)
+    debug_print("\n" + "=" * 80)
+    debug_print("LIBRARY FILES REPORT")
+    debug_print("=" * 80)
     
     if not libraries:
-        print("\nNo libraries found in the project.")
+        debug_print("\nNo libraries found in the project.")
         return
     
     total_files = 0
     for lib_dir in libraries:
         lib_name = lib_dir.name
-        print(f"\n{'=' * 80}")
-        print(f"Library: {lib_name}")
-        print(f"Path: {lib_dir}")
-        print(f"{'=' * 80}")
+        debug_print(f"\n{'=' * 80}")
+        debug_print(f"Library: {lib_name}")
+        debug_print(f"Path: {lib_dir}")
+        debug_print(f"{'=' * 80}")
         
         files = get_all_files(lib_dir)
         total_files += len(files)
         
         if files:
-            print(f"\nFound {len(files)} files:")
+            debug_print(f"\nFound {len(files)} files:")
             for file_path in sorted(files):
                 # Print relative path from library root
                 try:
                     rel_path = file_path.relative_to(lib_dir)
-                    print(f"  {rel_path}")
+                    debug_print(f"  {rel_path}")
                 except ValueError:
-                    print(f"  {file_path}")
+                    debug_print(f"  {file_path}")
         else:
-            print("\nNo files found in this library.")
+            debug_print("\nNo files found in this library.")
     
-    print(f"\n{'=' * 80}")
-    print(f"Total libraries: {len(libraries)}")
-    print(f"Total files across all libraries: {total_files}")
-    print("=" * 80)
+    debug_print(f"\n{'=' * 80}")
+    debug_print(f"Total libraries: {len(libraries)}")
+    debug_print(f"Total files across all libraries: {total_files}")
+    debug_print("=" * 80)
 
