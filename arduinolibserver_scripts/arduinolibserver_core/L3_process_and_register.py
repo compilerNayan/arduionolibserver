@@ -14,26 +14,6 @@ import sys
 import re
 from pathlib import Path
 
-# Import logging utility
-try:
-    # Try to find and import pre_build_logger
-    script_dir = Path(__file__).parent if '__file__' in globals() else Path(os.getcwd())
-    import os
-    for parent in [script_dir] + list(script_dir.parents)[:10]:
-        logger_path = parent / "arduinolib0" / "arduinolib0_scripts" / "pre_build_logger.py"
-        if logger_path.exists():
-            sys.path.insert(0, str(logger_path.parent))
-            from pre_build_logger import log_annotation_processed
-            break
-    else:
-        # Fallback: create minimal logger functions
-        def log_annotation_processed(annotation, file_path, details=None):
-            pass
-except Exception:
-    # Fallback: create minimal logger functions
-    def log_annotation_processed(annotation, file_path, details=None):
-        pass
-
 
 def extract_bracket_content(content):
     """Extract content from brackets, removing quotes if present."""
