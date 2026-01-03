@@ -1,5 +1,5 @@
 # Print message immediately when script is loaded
-# print("Hello from arduinolibserver pre-build script")
+print("Hello from arduinolibserver pre-build script")
 
 # Import PlatformIO environment first (if available)
 env = None
@@ -7,7 +7,7 @@ try:
     Import("env")
 except NameError:
     # Not running in PlatformIO environment (e.g., running from CMake)
-    # print("Note: Not running in PlatformIO environment - some features may be limited")
+    print("Note: Not running in PlatformIO environment - some features may be limited")
     # Create a mock env object for CMake builds
     class MockEnv:
         def get(self, key, default=None):
@@ -41,9 +41,9 @@ def get_project_dir():
         project_dir = os.getcwd()
     
     if project_dir:
-        # print(f"\nClient project directory: {project_dir}")
+        print(f"\nClient project directory: {project_dir}")
     else:
-        # print("Warning: Could not determine PROJECT_DIR from environment")
+        print("Warning: Could not determine PROJECT_DIR from environment")
     return project_dir
 
 
@@ -155,25 +155,25 @@ def find_all_libraries(project_dir):
     # Find PlatformIO libraries in .pio/libdeps/
     pio_libdeps = project_path / ".pio" / "libdeps"
     if pio_libdeps.exists() and pio_libdeps.is_dir():
-        # print(f"\nSearching PlatformIO libraries in: {pio_libdeps}")
+        print(f"\nSearching PlatformIO libraries in: {pio_libdeps}")
         for platform_dir in pio_libdeps.iterdir():
             if platform_dir.is_dir():
                 for lib_dir in platform_dir.iterdir():
                     if lib_dir.is_dir():
                         libraries.append(lib_dir)
-                        # print(f"  Found PlatformIO library: {lib_dir.name} at {lib_dir}")
+                        print(f"  Found PlatformIO library: {lib_dir.name} at {lib_dir}")
     
     # Find CMake libraries in build/_deps/
     cmake_deps = project_path / "build" / "_deps"
     if cmake_deps.exists() and cmake_deps.is_dir():
-        # print(f"\nSearching CMake libraries in: {cmake_deps}")
+        print(f"\nSearching CMake libraries in: {cmake_deps}")
         for lib_dir in cmake_deps.iterdir():
             if lib_dir.is_dir() and not lib_dir.name.startswith("."):
                 # Only include -src directories (source libraries) or directories with include/ folder
                 # Skip -build and -subbuild directories
                 if lib_dir.name.endswith("-src") or (lib_dir / "include").exists():
                     libraries.append(lib_dir)
-                    # print(f"  Found CMake library: {lib_dir.name} at {lib_dir}")
+                    print(f"  Found CMake library: {lib_dir.name} at {lib_dir}")
     
     return libraries
 
@@ -201,9 +201,9 @@ def get_all_files(library_dir):
                 full_path = item.resolve()
                 files.append(full_path)
     except Exception as e:
-        # print(f"  Warning: Error scanning {library_dir}: {e}")
+        print(f"  Warning: Error scanning {library_dir}: {e}")
         import traceback
-        # print(f"  Traceback: {traceback.format_exc()}")
+        print(f"  Traceback: {traceback.format_exc()}")
     
     return files
 
@@ -219,40 +219,38 @@ def print_library_files(libraries):
         list: List of all file paths found (Path objects with full absolute paths)
     """
     all_files = []
-    # print("\n" + "=" * 80)
-    # print("NAYAN X LIBRARY FILES REPORT (.cpp and .h files only)")
-    # print("=" * 80)
+    print("\n" + "=" * 80)
+    print("NAYAN X LIBRARY FILES REPORT (.cpp and .h files only)")
+    print("=" * 80)
     
     if not libraries:
-        # print("\nNo libraries found in the project.")
+        print("\nNo libraries found in the project.")
         return all_files
     
     total_files = 0
     for lib_dir in libraries:
         lib_name = lib_dir.name
-        # print(f"\n{'=' * 80}")
-        # print(f"Library: {lib_name}")
-        # print(f"Path: {lib_dir}")
-        # print(f"{'=' * 80}")
+        print(f"\n{'=' * 80}")
+        print(f"Library: {lib_name}")
+        print(f"Path: {lib_dir}")
+        print(f"{'=' * 80}")
         
         files = get_all_files(lib_dir)
         total_files += len(files)
         all_files.extend(files)
         
         if files:
-            # print(f"\nFound {len(files)} .cpp/.h files:")
+            print(f"\nFound {len(files)} .cpp/.h files:")
             for file_path in sorted(files):
                 # Print full absolute path (already resolved in get_all_files)
-                # print(f"  {file_path}")
-                pass
+                print(f"  {file_path}")
         else:
-            # print("\nNo .cpp/.h files found in this library.")
-            pass
+            print("\nNo .cpp/.h files found in this library.")
     
-    # print(f"\n{'=' * 80}")
-    # print(f"Total libraries: {len(libraries)}")
-    # print(f"Total .cpp/.h files across all libraries: {total_files}")
-    # print("=" * 80)
+    print(f"\n{'=' * 80}")
+    print(f"Total libraries: {len(libraries)}")
+    print(f"Total .cpp/.h files across all libraries: {total_files}")
+    print("=" * 80)
     
     return all_files
 
@@ -261,23 +259,23 @@ def main():
     """Main function to execute the script."""
     project_dir = get_project_dir()
     if not project_dir:
-        # print("Error: Could not determine project directory")
+        print("Error: Could not determine project directory")
         return
     
     libraries = find_all_libraries(project_dir)
     print_library_files(libraries)
     
     # Get current library path and process @ServerImpl annotations from ALL libraries
-    # print("\n" + "=" * 80)
-    # print("Processing @ServerImpl annotations in all libraries...")
-    # print("=" * 80)
+    print("\n" + "=" * 80)
+    print("Processing @ServerImpl annotations in all libraries...")
+    print("=" * 80)
     
     current_library_path = get_current_library_path(project_dir)
     if not current_library_path:
-        # print("Error: Could not determine current library path (arduionolibserver)")
+        print("Error: Could not determine current library path (arduionolibserver)")
         return
     
-    # print(f"Current library path (for ServerFactoryInit.h): {current_library_path}")
+    print(f"Current library path (for ServerFactoryInit.h): {current_library_path}")
     
     # Get all .h/.hpp files from ALL libraries, not just the current one
     all_library_files = []
@@ -285,28 +283,26 @@ def main():
         lib_files = get_all_files(lib_dir)
         all_library_files.extend(lib_files)
         if lib_files:
-            # print(f"  Found {len(lib_files)} .h/.hpp file(s) in library: {lib_dir.name} at {lib_dir}")
-            pass
+            print(f"  Found {len(lib_files)} .h/.hpp file(s) in library: {lib_dir.name} at {lib_dir}")
         else:
             # Debug: print even if no files found, especially for libraries we expect to have files
             if "arduinodesktopserver" in lib_dir.name.lower():
-                # print(f"  DEBUG: Library {lib_dir.name} at {lib_dir} - no files found")
-                # print(f"    Library exists: {lib_dir.exists()}")
-                # print(f"    Is directory: {lib_dir.is_dir() if lib_dir.exists() else 'N/A'}")
+                print(f"  DEBUG: Library {lib_dir.name} at {lib_dir} - no files found")
+                print(f"    Library exists: {lib_dir.exists()}")
+                print(f"    Is directory: {lib_dir.is_dir() if lib_dir.exists() else 'N/A'}")
                 include_dir = lib_dir / "include"
-                # print(f"    Include dir exists: {include_dir.exists()}")
+                print(f"    Include dir exists: {include_dir.exists()}")
                 if include_dir.exists():
                     http_file = include_dir / "HttpTcpServer.h"
-                    # print(f"    HttpTcpServer.h exists: {http_file.exists()}")
+                    print(f"    HttpTcpServer.h exists: {http_file.exists()}")
                     if http_file.exists():
-                        # print(f"    HttpTcpServer.h path: {http_file}")
-                        pass
+                        print(f"    HttpTcpServer.h path: {http_file}")
     
     if not all_library_files:
-        # print("No .h/.hpp files found in any library.")
+        print("No .h/.hpp files found in any library.")
         return
     
-    # print(f"\nTotal: Found {len(all_library_files)} .h/.hpp file(s) across all libraries")
+    print(f"\nTotal: Found {len(all_library_files)} .h/.hpp file(s) across all libraries")
     
     # Import and use L3_process_and_register functions
     try:
@@ -328,21 +324,20 @@ def main():
         
         # Process each file from all libraries
         for file_path in all_library_files:
-            # print(f"\nProcessing: {file_path}")
+            print(f"\nProcessing: {file_path}")
             result = check_and_comment_server_impl(file_path)
             
             if result['error']:
-                # print(f"  Error: {result['error']}")
+                print(f"  Error: {result['error']}")
                 continue
             
             if result['found']:
                 processed_count += 1
                 if result['modified']:
                     commented_count += 1
-                    # print(f"  ✓ Marked {len(result['matches'])} @ServerImpl annotation(s) as processed")
+                    print(f"  ✓ Marked {len(result['matches'])} @ServerImpl annotation(s) as processed")
                 else:
-                    # print(f"  ✓ Found {len(result['matches'])} @ServerImpl annotation(s) (already processed)")
-                    pass
+                    print(f"  ✓ Found {len(result['matches'])} @ServerImpl annotation(s) (already processed)")
                 
                 # Add registrations to the list
                 for match in result['matches']:
@@ -351,60 +346,52 @@ def main():
                         'server_impl_content': match['server_impl_content'],
                         'file_path': match.get('file_path', '')  # Include file path
                     })
-                    # print(f"    - Class: {match['class_name']}, @ServerImpl: \"{match['server_impl_content']}\"")
+                    print(f"    - Class: {match['class_name']}, @ServerImpl: \"{match['server_impl_content']}\"")
             else:
-                # print(f"  - No @ServerImpl annotation found")
-                pass
+                print(f"  - No @ServerImpl annotation found")
         
-        # print(f"\n{'=' * 80}")
-        # print(f"Summary:")
-        # print(f"  Files processed: {processed_count}/{len(all_library_files)}")
-        # print(f"  Files with annotations processed: {commented_count}")
-        # print(f"  Total registrations: {len(all_registrations)}")
-        # print(f"{'=' * 80}\n")
+        print(f"\n{'=' * 80}")
+        print(f"Summary:")
+        print(f"  Files processed: {processed_count}/{len(all_library_files)}")
+        print(f"  Files with annotations processed: {commented_count}")
+        print(f"  Total registrations: {len(all_registrations)}")
+        print(f"{'=' * 80}\n")
         
         if all_registrations:
             # Generate include statements
-            # print("Generating include statements...")
+            print("Generating include statements...")
             include_statements = generate_include_statements(all_registrations, current_library_path)
             if include_statements:
-                # print("Generated includes:")
-                # print("-" * 80)
-                # print(include_statements)
-                # print("-" * 80)
-                pass
+                print("Generated includes:")
+                print("-" * 80)
+                print(include_statements)
+                print("-" * 80)
             
             # Generate registration code
-            # print("\nGenerating registration code...")
+            print("\nGenerating registration code...")
             registration_code = generate_registration_code(all_registrations)
-            # print("Generated code:")
-            # print("-" * 80)
-            # print(registration_code)
-            # print("-" * 80)
+            print("Generated code:")
+            print("-" * 80)
+            print(registration_code)
+            print("-" * 80)
             
             # Update ServerFactoryInit.h
-            # print(f"\nUpdating ServerFactoryInit.h...")
+            print(f"\nUpdating ServerFactoryInit.h...")
             result = update_server_factory_init(current_library_path, registration_code, include_statements)
             
             if result['error']:
-                # print(f"Error: {result['error']}")
-                pass
+                print(f"Error: {result['error']}")
             elif result['success']:
-                # print(f"✓ Successfully updated ServerFactoryInit.h")
-                pass
+                print(f"✓ Successfully updated ServerFactoryInit.h")
             else:
-                # print(f"✗ Failed to update ServerFactoryInit.h")
-                pass
+                print(f"✗ Failed to update ServerFactoryInit.h")
         else:
-            # print("No @ServerImpl annotations found. Nothing to register.")
-            pass
+            print("No @ServerImpl annotations found. Nothing to register.")
     
     except ImportError as e:
-        # print(f"Error: Could not import L3_process_and_register functions: {e}")
-        pass
+        print(f"Error: Could not import L3_process_and_register functions: {e}")
     except Exception as e:
-        # print(f"Error processing @ServerImpl annotations: {e}")
-        pass
+        print(f"Error processing @ServerImpl annotations: {e}")
 
 
 # Execute main function
