@@ -107,35 +107,38 @@ def comment_server_impl(file_path, dry_run=False):
 def main():
     """Main function to run the script from command line."""
     if len(sys.argv) < 2:
-        print("Usage: python L2_comment_server_impl.py <file_path> [--dry-run]")
-        print("Example: python L2_comment_server_impl.py /path/to/file.h")
-        print("         python L2_comment_server_impl.py /path/to/file.h --dry-run")
+        # print("Usage: python L2_comment_server_impl.py <file_path> [--dry-run]")
+        # print("Example: python L2_comment_server_impl.py /path/to/file.h")
+        # print("         python L2_comment_server_impl.py /path/to/file.h --dry-run")
         sys.exit(1)
     
     file_path = sys.argv[1]
     dry_run = '--dry-run' in sys.argv or '-n' in sys.argv
     
     if dry_run:
-        print("DRY RUN MODE - No changes will be made to the file\n")
+        # print("DRY RUN MODE - No changes will be made to the file\n")
+        pass
     
     result = comment_server_impl(file_path, dry_run=dry_run)
     
     if result['error']:
-        print(f"Error: {result['error']}")
+        # print(f"Error: {result['error']}")
         sys.exit(1)
     
     if result['modified']:
         action = "Would mark" if dry_run else "Marked"
-        print(f"✓ {action} {len(result['commented_lines'])} @ServerImpl annotation(s) as processed in {file_path}")
+        # print(f"✓ {action} {len(result['commented_lines'])} @ServerImpl annotation(s) as processed in {file_path}")
         for item in result['commented_lines']:
-            print(f"\n  Line {item['line_number']}:")
-            print(f"    Original: {item['original']}")
-            print(f"    {'Would be' if dry_run else 'Now'}: {item['commented']}")
+            # print(f"\n  Line {item['line_number']}:")
+            # print(f"    Original: {item['original']}")
+            # print(f"    {'Would be' if dry_run else 'Now'}: {item['commented']}")
+            pass
         if not dry_run:
-            print(f"\n✓ File saved successfully")
+            # print(f"\n✓ File saved successfully")
+            pass
         sys.exit(0)
     else:
-        print(f"✗ No @ServerImpl annotations found to process in {file_path}")
+        # print(f"✗ No @ServerImpl annotations found to process in {file_path}")
         sys.exit(0)
 
 

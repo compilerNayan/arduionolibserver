@@ -281,15 +281,15 @@ def update_server_factory_init(library_dir, registration_code, include_statement
 def main():
     """Main function to run the script from command line."""
     if len(sys.argv) < 3:
-        print("Usage: python L3_process_and_register.py <library_dir> <file1> [file2] [file3] ...")
-        print("Example: python L3_process_and_register.py /path/to/lib /path/to/file1.h /path/to/file2.h")
+        # print("Usage: python L3_process_and_register.py <library_dir> <file1> [file2] [file3] ...")
+        # print("Example: python L3_process_and_register.py /path/to/lib /path/to/file1.h /path/to/file2.h")
         sys.exit(1)
     
     library_dir = sys.argv[1]
     file_paths = sys.argv[2:]
     
-    print(f"Processing {len(file_paths)} file(s)...")
-    print(f"Library directory: {library_dir}\n")
+    # print(f"Processing {len(file_paths)} file(s)...")
+    # print(f"Library directory: {library_dir}\n")
     
     all_registrations = []
     processed_count = 0
@@ -297,20 +297,21 @@ def main():
     
     # Process each file
     for file_path in file_paths:
-        print(f"Processing: {file_path}")
+        # print(f"Processing: {file_path}")
         result = check_and_comment_server_impl(file_path)
         
         if result['error']:
-            print(f"  Error: {result['error']}")
+            # print(f"  Error: {result['error']}")
             continue
         
         if result['found']:
             processed_count += 1
             if result['modified']:
                 commented_count += 1
-                print(f"  ✓ Marked {len(result['matches'])} @ServerImpl annotation(s) as processed")
+                # print(f"  ✓ Marked {len(result['matches'])} @ServerImpl annotation(s) as processed")
             else:
-                print(f"  ✓ Found {len(result['matches'])} @ServerImpl annotation(s) (already processed)")
+                # print(f"  ✓ Found {len(result['matches'])} @ServerImpl annotation(s) (already processed)")
+                pass
             
             # Add registrations to the list
             for match in result['matches']:
@@ -319,51 +320,53 @@ def main():
                     'server_impl_content': match['server_impl_content'],
                     'file_path': match.get('file_path', '')  # Include file path
                 })
-                print(f"    - Class: {match['class_name']}, @ServerImpl: \"{match['server_impl_content']}\"")
+                # print(f"    - Class: {match['class_name']}, @ServerImpl: \"{match['server_impl_content']}\"")
         else:
-            print(f"  - No @ServerImpl annotation found")
+            # print(f"  - No @ServerImpl annotation found")
+            pass
     
-    print(f"\n{'=' * 80}")
-    print(f"Summary:")
-    print(f"  Files processed: {processed_count}/{len(file_paths)}")
-    print(f"  Files with annotations processed: {commented_count}")
-    print(f"  Total registrations: {len(all_registrations)}")
-    print(f"{'=' * 80}\n")
+    # print(f"\n{'=' * 80}")
+    # print(f"Summary:")
+    # print(f"  Files processed: {processed_count}/{len(file_paths)}")
+    # print(f"  Files with annotations processed: {commented_count}")
+    # print(f"  Total registrations: {len(all_registrations)}")
+    # print(f"{'=' * 80}\n")
     
     if not all_registrations:
-        print("No @ServerImpl annotations found. Nothing to register.")
+        # print("No @ServerImpl annotations found. Nothing to register.")
         sys.exit(0)
     
     # Generate include statements
-    print("Generating include statements...")
+    # print("Generating include statements...")
     include_statements = generate_include_statements(all_registrations, library_dir)
     if include_statements:
-        print("Generated includes:")
-        print("-" * 80)
-        print(include_statements)
-        print("-" * 80)
+        # print("Generated includes:")
+        # print("-" * 80)
+        # print(include_statements)
+        # print("-" * 80)
+        pass
     
     # Generate registration code
-    print("\nGenerating registration code...")
+    # print("\nGenerating registration code...")
     registration_code = generate_registration_code(all_registrations)
-    print("Generated code:")
-    print("-" * 80)
-    print(registration_code)
-    print("-" * 80)
+    # print("Generated code:")
+    # print("-" * 80)
+    # print(registration_code)
+    # print("-" * 80)
     
     # Update ServerFactoryInit.h
-    print(f"\nUpdating ServerFactoryInit.h...")
+    # print(f"\nUpdating ServerFactoryInit.h...")
     result = update_server_factory_init(library_dir, registration_code, include_statements)
     
     if result['error']:
-        print(f"Error: {result['error']}")
+        # print(f"Error: {result['error']}")
         sys.exit(1)
     
     if result['success']:
-        print(f"✓ Successfully updated ServerFactoryInit.h")
+        # print(f"✓ Successfully updated ServerFactoryInit.h")
         sys.exit(0)
     else:
-        print(f"✗ Failed to update ServerFactoryInit.h")
+        # print(f"✗ Failed to update ServerFactoryInit.h")
         sys.exit(1)
 
 

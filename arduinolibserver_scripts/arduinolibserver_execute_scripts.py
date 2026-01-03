@@ -74,7 +74,8 @@ def get_all_files(library_dir):
             if item.is_file():
                 files.append(item)
     except Exception as e:
-        print(f"  Warning: Error scanning {library_dir}: {e}")
+        # print(f"  Warning: Error scanning {library_dir}: {e}")
+        pass
     
     return files
 
@@ -87,48 +88,50 @@ def execute_scripts(project_dir, library_dir):
         project_dir: Path to the client project root (where platformio.ini is)
         library_dir: Path to the library directory (not used in this implementation)
     """
-    print(f"\nproject_dir: {project_dir}")
-    print(f"library_dir: {library_dir}")
+    # print(f"\nproject_dir: {project_dir}")
+    # print(f"library_dir: {library_dir}")
     
     if not project_dir:
-        print("Error: Project directory not provided")
+        # print("Error: Project directory not provided")
         return
     
     libraries = find_all_libraries(project_dir)
     
-    print("\n" + "=" * 80)
-    print("LIBRARY FILES REPORT")
-    print("=" * 80)
+    # print("\n" + "=" * 80)
+    # print("LIBRARY FILES REPORT")
+    # print("=" * 80)
     
     if not libraries:
-        print("\nNo libraries found in the project.")
+        # print("\nNo libraries found in the project.")
         return
     
     total_files = 0
     for lib_dir in libraries:
         lib_name = lib_dir.name
-        print(f"\n{'=' * 80}")
-        print(f"Library: {lib_name}")
-        print(f"Path: {lib_dir}")
-        print(f"{'=' * 80}")
+        # print(f"\n{'=' * 80}")
+        # print(f"Library: {lib_name}")
+        # print(f"Path: {lib_dir}")
+        # print(f"{'=' * 80}")
         
         files = get_all_files(lib_dir)
         total_files += len(files)
         
         if files:
-            print(f"\nFound {len(files)} files:")
+            # print(f"\nFound {len(files)} files:")
             for file_path in sorted(files):
                 # Print relative path from library root
                 try:
                     rel_path = file_path.relative_to(lib_dir)
-                    print(f"  {rel_path}")
+                    # print(f"  {rel_path}")
                 except ValueError:
-                    print(f"  {file_path}")
+                    # print(f"  {file_path}")
+                    pass
         else:
-            print("\nNo files found in this library.")
+            # print("\nNo files found in this library.")
+            pass
     
-    print(f"\n{'=' * 80}")
-    print(f"Total libraries: {len(libraries)}")
-    print(f"Total files across all libraries: {total_files}")
-    print("=" * 80)
+    # print(f"\n{'=' * 80}")
+    # print(f"Total libraries: {len(libraries)}")
+    # print(f"Total files across all libraries: {total_files}")
+    # print("=" * 80)
 
