@@ -337,7 +337,8 @@ def main():
                     commented_count += 1
                     # print(f"  ✓ Marked {len(result['matches'])} @ServerImpl annotation(s) as processed")
                 else:
-                    print(f"  ✓ Found {len(result['matches'])} @ServerImpl annotation(s) (already processed)")
+                    # print(f"  ✓ Found {len(result['matches'])} @ServerImpl annotation(s) (already processed)")
+                    pass
                 
                 # Add registrations to the list
                 for match in result['matches']:
@@ -348,7 +349,8 @@ def main():
                     })
                     # print(f"    - Class: {match['class_name']}, @ServerImpl: \"{match['server_impl_content']}\"")
             else:
-                print(f"  - No @ServerImpl annotation found")
+                # print(f"  - No @ServerImpl annotation found")
+                pass
         
         # print(f"\n{'=' * 80}")
         # print(f"Summary:")
@@ -359,13 +361,14 @@ def main():
         
         if all_registrations:
             # Generate include statements
-            print("Generating include statements...")
+            # print("Generating include statements...")
             include_statements = generate_include_statements(all_registrations, current_library_path)
             if include_statements:
-                print("Generated includes:")
-                print("-" * 80)
-                print(include_statements)
-                print("-" * 80)
+                # print("Generated includes:")
+                # print("-" * 80)
+                # print(include_statements)
+                # print("-" * 80)
+                pass
             
             # Generate registration code
             # print("\nGenerating registration code...")
@@ -380,18 +383,24 @@ def main():
             result = update_server_factory_init(current_library_path, registration_code, include_statements)
             
             if result['error']:
-                print(f"Error: {result['error']}")
+                # print(f"Error: {result['error']}")
+                pass
             elif result['success']:
-                print(f"✓ Successfully updated ServerFactoryInit.h")
+                # print(f"✓ Successfully updated ServerFactoryInit.h")
+                pass
             else:
-                print(f"✗ Failed to update ServerFactoryInit.h")
+                # print(f"✗ Failed to update ServerFactoryInit.h")
+                pass
         else:
-            print("No @ServerImpl annotations found. Nothing to register.")
+            # print("No @ServerImpl annotations found. Nothing to register.")
+            pass
     
     except ImportError as e:
-        print(f"Error: Could not import L3_process_and_register functions: {e}")
+        # print(f"Error: Could not import L3_process_and_register functions: {e}")
+        pass
     except Exception as e:
-        print(f"Error processing @ServerImpl annotations: {e}")
+        # print(f"Error processing @ServerImpl annotations: {e}")
+        pass
 
 
 # Execute main function
