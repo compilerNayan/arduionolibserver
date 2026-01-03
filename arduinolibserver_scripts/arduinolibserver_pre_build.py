@@ -1,13 +1,9 @@
-# Print message immediately when script is loaded
-# print("Hello from arduinolibserver pre-build script")
-
 # Import PlatformIO environment first (if available)
 env = None
 try:
     Import("env")
 except NameError:
     # Not running in PlatformIO environment (e.g., running from CMake)
-    # print("Note: Not running in PlatformIO environment - some features may be limited")
     # Create a mock env object for CMake builds
     class MockEnv:
         def get(self, key, default=None):
@@ -18,6 +14,32 @@ import sys
 import os
 import json
 from pathlib import Path
+
+# Import logging utility
+try:
+    # Try to find and import pre_build_logger
+    script_dir = Path(__file__).parent if '__file__' in globals() else Path(os.getcwd())
+    # Search for arduinolib0_scripts
+    for parent in [script_dir] + list(script_dir.parents)[:10]:
+        logger_path = parent / "arduinolib0" / "arduinolib0_scripts" / "pre_build_logger.py"
+        if logger_path.exists():
+            sys.path.insert(0, str(logger_path.parent))
+            from pre_build_logger import print_banner, log_processing_start
+            print_banner()
+            log_processing_start("Server Implementation Processing")
+            break
+    else:
+        # Fallback: create minimal logger functions
+        def print_banner():
+            pass
+        def log_processing_start(name):
+            pass
+except Exception:
+    # Fallback: create minimal logger functions
+    def print_banner():
+        pass
+    def log_processing_start(name):
+        pass
 
 
 def get_project_dir():
@@ -339,10 +361,9 @@ def main():
                 processed_count += 1
                 if result['modified']:
                     commented_count += 1
-                    # print(f"  ✓ Marked {len(result['matches'])} @ServerImpl annotation(s) as processed")
-                else:
-                    # print(f"  ✓ Found {len(result['matches'])} @ServerImpl annotation(s) (already processed)")
-                    pass
+                    # Log each processed annotation
+                    for match in result['matches']:
+                        log_annotation_processed("@ServerImpl", file_path, f"class {match['class_name']}")
                 
                 # Add registrations to the list
                 for match in result['matches']:
@@ -351,10 +372,6 @@ def main():
                         'server_impl_content': match['server_impl_content'],
                         'file_path': match.get('file_path', '')  # Include file path
                     })
-                    # print(f"    - Class: {match['class_name']}, @ServerImpl: \"{match['server_impl_content']}\"")
-            else:
-                # print(f"  - No @ServerImpl annotation found")
-                pass
         
         # print(f"\n{'=' * 80}")
         # print(f"Summary:")
