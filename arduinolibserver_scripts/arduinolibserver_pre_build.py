@@ -40,10 +40,10 @@ def get_project_dir():
     if not project_dir:
         project_dir = os.getcwd()
     
-    if project_dir:
-        print(f"\nClient project directory: {project_dir}")
-    else:
-        print("Warning: Could not determine PROJECT_DIR from environment")
+    # if project_dir:
+        # print(f"\nClient project directory: {project_dir}")
+    # else:
+        # print("Warning: Could not determine PROJECT_DIR from environment")
     return project_dir
 
 
