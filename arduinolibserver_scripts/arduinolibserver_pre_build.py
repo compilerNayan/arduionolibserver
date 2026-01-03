@@ -201,9 +201,9 @@ def get_all_files(library_dir):
                 full_path = item.resolve()
                 files.append(full_path)
     except Exception as e:
-        print(f"  Warning: Error scanning {library_dir}: {e}")
+        # print(f"  Warning: Error scanning {library_dir}: {e}")
         import traceback
-        print(f"  Traceback: {traceback.format_exc()}")
+        # print(f"  Traceback: {traceback.format_exc()}")
     
     return files
 
