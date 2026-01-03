@@ -240,12 +240,14 @@ def print_library_files(libraries):
         all_files.extend(files)
         
         if files:
-            print(f"\nFound {len(files)} .cpp/.h files:")
+            # print(f"\nFound {len(files)} .cpp/.h files:")
             for file_path in sorted(files):
                 # Print full absolute path (already resolved in get_all_files)
-                print(f"  {file_path}")
+                # print(f"  {file_path}")
+                pass
         else:
-            print("\nNo .cpp/.h files found in this library.")
+            # print("\nNo .cpp/.h files found in this library.")
+            pass
     
     # print(f"\n{'=' * 80}")
     # print(f"Total libraries: {len(libraries)}")
@@ -283,7 +285,8 @@ def main():
         lib_files = get_all_files(lib_dir)
         all_library_files.extend(lib_files)
         if lib_files:
-            print(f"  Found {len(lib_files)} .h/.hpp file(s) in library: {lib_dir.name} at {lib_dir}")
+            # print(f"  Found {len(lib_files)} .h/.hpp file(s) in library: {lib_dir.name} at {lib_dir}")
+            pass
         else:
             # Debug: print even if no files found, especially for libraries we expect to have files
             if "arduinodesktopserver" in lib_dir.name.lower():
@@ -296,7 +299,8 @@ def main():
                     http_file = include_dir / "HttpTcpServer.h"
                     # print(f"    HttpTcpServer.h exists: {http_file.exists()}")
                     if http_file.exists():
-                        print(f"    HttpTcpServer.h path: {http_file}")
+                        # print(f"    HttpTcpServer.h path: {http_file}")
+                        pass
     
     if not all_library_files:
         # print("No .h/.hpp files found in any library.")
