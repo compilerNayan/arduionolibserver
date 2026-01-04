@@ -8,17 +8,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Fetch dependencies
 include(FetchContent)
 
-# Fetch arduinolib0 for StandardDefines.h
+# Fetch cppcore for StandardDefines.h
 FetchContent_Declare(
-    arduinolib0
+    cppcore
     GIT_REPOSITORY https://github.com/compilerNayan/arduinolib0.git
     GIT_TAG        dev  # Use the main branch
 )
-FetchContent_MakeAvailable(arduinolib0)
+FetchContent_MakeAvailable(cppcore)
 
 # Run pre-build script during configuration (runs even if client creates own library)
 # This will run whenever this CMakeLists.txt is processed
-# Note: arduinolib0 is now available since FetchContent_MakeAvailable was called above
+    # Note: cppcore is now available since FetchContent_MakeAvailable was called above
 find_program(PYTHON_EXECUTABLE python3 python)
 if(PYTHON_EXECUTABLE AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/arduinolibserver_scripts/arduinolibserver_pre_build.py")
     # Get the client project directory (CMAKE_SOURCE_DIR is the top-level project source directory)
@@ -63,20 +63,20 @@ target_include_directories(arduionolibserver INTERFACE
     $<INSTALL_INTERFACE:include>
 )
 
-# Add arduinolib0 include directory (for StandardDefines.h)
+# Add cppcore include directory (for StandardDefines.h)
 # Use BUILD_INTERFACE generator expression to properly handle FetchContent paths
-FetchContent_GetProperties(arduinolib0)
-if(arduinolib0_SOURCE_DIR)
+FetchContent_GetProperties(cppcore)
+if(cppcore_SOURCE_DIR)
     target_include_directories(arduionolibserver INTERFACE
-        $<BUILD_INTERFACE:${arduinolib0_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${cppcore_SOURCE_DIR}/include>
     )
 endif()
 
-# Link arduinolib0 if it provides a target
-if(TARGET arduinolib0::arduinolib0)
-    target_link_libraries(arduionolibserver INTERFACE arduinolib0::arduinolib0)
-elseif(TARGET arduinolib0)
-    target_link_libraries(arduionolibserver INTERFACE arduinolib0)
+# Link cppcore if it provides a target
+if(TARGET cppcore::cppcore)
+    target_link_libraries(arduionolibserver INTERFACE cppcore::cppcore)
+elseif(TARGET cppcore)
+    target_link_libraries(arduionolibserver INTERFACE cppcore)
 endif()
 
 # Add pre-build script execution
