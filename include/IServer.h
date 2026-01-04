@@ -72,12 +72,15 @@ class IServer {
     Public Virtual IHttpRequestPtr ReceiveMessage() = 0;
     
     /**
-     * Send a message to a client using request ID
-     * @param requestId The request ID (GUID) to look up sender details
+     * Send a message to a client
      * @param message Message to send
+     * @param clientIp IP address of the client (for UDP, required; for TCP, optional if connection exists)
+     * @param clientPort Port of the client (for UDP, required; for TCP, optional if connection exists)
      * @return true if message was sent successfully, false otherwise
      */
-    Public Virtual Bool SendMessage(CStdString& requestId, CStdString& message) = 0;
+    Public Virtual Bool SendMessage(CStdString& message, 
+                            CStdString& clientIp = "", 
+                            CUInt clientPort = 0) = 0;
     
     // ========== Client Information ==========
     
