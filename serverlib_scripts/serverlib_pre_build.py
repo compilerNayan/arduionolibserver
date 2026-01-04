@@ -1,5 +1,5 @@
 # Print message immediately when script is loaded
-# print("Hello from arduinolibserver pre-build script")
+# print("Hello from serverlib pre-build script")
 
 # Import PlatformIO environment first (if available)
 env = None
@@ -49,7 +49,7 @@ def get_project_dir():
 
 def get_current_library_path(project_dir=None):
     """
-    Get the full path of the current library (arduionolibserver).
+    Get the full path of the current library (serverlib).
     
     This function tries multiple methods to find the library:
     1. Uses PlatformIO env if available (LIB_PATH or similar)
@@ -60,7 +60,7 @@ def get_current_library_path(project_dir=None):
         project_dir: Optional project directory to search in libraries list
     
     Returns:
-        Path: Path object pointing to the arduionolibserver library directory, or None if not found
+        Path: Path object pointing to the serverlib library directory, or None if not found
     """
     # Method 1: Try PlatformIO environment (when running in PlatformIO)
     # When PlatformIO executes the script, it provides the library path
@@ -81,13 +81,13 @@ def get_current_library_path(project_dir=None):
                 for platform_dir in libdeps_path.iterdir():
                     if platform_dir.is_dir():
                         for lib_dir in platform_dir.iterdir():
-                            if lib_dir.is_dir() and "arduionolibserver" in lib_dir.name.lower():
+                            if lib_dir.is_dir() and ("serverlib" in lib_dir.name.lower() or "arduionolibserver" in lib_dir.name.lower()):
                                 if (lib_dir / "include").exists() and (lib_dir / "library.json").exists():
                                     try:
                                         lib_json_path = lib_dir / "library.json"
                                         with open(lib_json_path, 'r') as f:
                                             lib_data = json.load(f)
-                                            if lib_data.get("name") == "arduionolibserver":
+                                            if lib_data.get("name") == "serverlib" or lib_data.get("name") == "arduionolibserver":
                                                 return lib_dir.resolve()
                                     except Exception:
                                         pass
@@ -103,13 +103,13 @@ def get_current_library_path(project_dir=None):
             
             # Check if this looks like the right library (has include/ and library.json)
             if library_dir.exists() and (library_dir / "include").exists() and (library_dir / "library.json").exists():
-                # Verify it's arduionolibserver by checking library.json
+                # Verify it's serverlib by checking library.json
                 try:
                     lib_json_path = library_dir / "library.json"
                     if lib_json_path.exists():
                         with open(lib_json_path, 'r') as f:
                             lib_data = json.load(f)
-                            if lib_data.get("name") == "arduionolibserver":
+                            if lib_data.get("name") == "serverlib" or lib_data.get("name") == "arduionolibserver":
                                 return library_dir.resolve()
                 except Exception:
                     pass
@@ -122,15 +122,15 @@ def get_current_library_path(project_dir=None):
         libraries = find_all_libraries(project_dir)
         for lib_dir in libraries:
             lib_name = lib_dir.name
-            # Check for various naming patterns (arduionolibserver, arduionolibserver-src, etc.)
-            if "arduionolibserver" in lib_name.lower():
+            # Check for various naming patterns (serverlib, serverlib-src, arduionolibserver, etc.)
+            if "serverlib" in lib_name.lower() or "arduionolibserver" in lib_name.lower():
                 # Verify by checking for include/ directory and library.json
                 if (lib_dir / "include").exists() and (lib_dir / "library.json").exists():
                     try:
                         lib_json_path = lib_dir / "library.json"
                         with open(lib_json_path, 'r') as f:
                             lib_data = json.load(f)
-                            if lib_data.get("name") == "arduionolibserver":
+                            if lib_data.get("name") == "serverlib" or lib_data.get("name") == "arduionolibserver":
                                 return lib_dir.resolve()
                     except Exception:
                         # If can't read library.json, still return if has include/
@@ -274,7 +274,7 @@ def main():
     
     current_library_path = get_current_library_path(project_dir)
     if not current_library_path:
-        # print("Error: Could not determine current library path (arduionolibserver)")
+        # print("Error: Could not determine current library path (serverlib)")
         return
     
     # print(f"Current library path (for ServerFactoryInit.h): {current_library_path}")
@@ -314,10 +314,10 @@ def main():
         # Use safe method to get script directory
         script_file = globals().get('__file__', None)
         if script_file:
-            core_scripts_dir = Path(script_file).parent / "arduinolibserver_core"
+            core_scripts_dir = Path(script_file).parent / "serverlib_core"
         else:
             # Fallback: use current_library_path to find scripts directory
-            core_scripts_dir = current_library_path / "arduinolibserver_scripts" / "arduinolibserver_core"
+            core_scripts_dir = current_library_path / "serverlib_scripts" / "serverlib_core"
         sys.path.insert(0, str(core_scripts_dir))
         
         from L3_process_and_register import check_and_comment_server_impl, generate_registration_code, generate_include_statements, update_server_factory_init

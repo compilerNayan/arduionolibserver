@@ -1,5 +1,5 @@
 {
-  "name": "arduionolibserver",
+  "name": "serverlib",
   "version": "1.0.0",
   "description": "HTTP TCP Server library for Arduino/ESP32 with IServer interface implementation",
   "keywords": "http, tcp, server, network, webserver",
@@ -20,7 +20,7 @@
   "frameworks": "arduino",
   "platforms": "*",
   "build": {
-    "extraScript": "arduinolibserver_scripts/arduinolibserver_pre_build.py"
+    "extraScript": "serverlib_scripts/serverlib_pre_build.py"
   }
 }
 
