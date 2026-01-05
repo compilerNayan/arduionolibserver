@@ -243,10 +243,26 @@ class IHttpResponse {
 
 // Inline implementation
 inline IHttpResponsePtr IHttpResponse::GetResponse(CStdString& requestId, CStdString& body) {
+    std::cout << "[IHttpResponse::GetResponse] Called with requestId='" << requestId << "' (length: " << requestId.length() << "), body length: " << body.length() << std::endl;
     if (requestId.empty()) {
+        std::cout << "[IHttpResponse::GetResponse] ERROR: requestId is empty, returning nullptr" << std::endl;
         return nullptr;
     }
-    return make_ptr<SimpleHttpResponse>(requestId, body);
+    std::cout << "[IHttpResponse::GetResponse] Creating SimpleHttpResponse..." << std::endl;
+    try {
+        IHttpResponsePtr response = make_ptr<SimpleHttpResponse>(requestId, body);
+        std::cout << "[IHttpResponse::GetResponse] Created response: " << (response != nullptr ? "success" : "failed (nullptr)") << std::endl;
+        if (response != nullptr) {
+            std::cout << "[IHttpResponse::GetResponse] Response requestId: '" << response->GetRequestId() << "'" << std::endl;
+        }
+        return response;
+    } catch (const std::exception& e) {
+        std::cout << "[IHttpResponse::GetResponse] EXCEPTION: " << e.what() << std::endl;
+        return nullptr;
+    } catch (...) {
+        std::cout << "[IHttpResponse::GetResponse] EXCEPTION: Unknown exception occurred" << std::endl;
+        return nullptr;
+    }
 }
 
 #endif // IHTTPRESPONSE_H
