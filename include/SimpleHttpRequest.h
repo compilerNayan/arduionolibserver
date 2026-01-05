@@ -90,7 +90,7 @@ class SimpleHttpRequest : public IHttpRequest {
     }
 
 
-    Public SimpleHttpRequest(CStdString& rawRequest, CStdString& requestId) 
+    Public SimpleHttpRequest(CStdString& requestId, CStdString& rawRequest) 
         : method_(HttpMethod::GET), clientPort_(0), timestamp_(0) {
         rawRequest_ = rawRequest;
         requestId_ = requestId;

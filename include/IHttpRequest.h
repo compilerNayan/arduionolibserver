@@ -210,22 +210,22 @@ class IHttpRequest {
     
     /**
      * Parse raw HTTP request string and create IHttpRequest object
-     * @param rawRequest The raw HTTP request string from IServer::ReceiveMessage()
      * @param requestId The unique request ID (GUID) for this request
+     * @param rawRequest The raw HTTP request string from IServer::ReceiveMessage()
      * @return IHttpRequestPtr (shared_ptr), or nullptr if parsing fails
      */
-    Static inline IHttpRequestPtr GetRequest(CStdString& rawRequest, CStdString& requestId);
+    Static inline IHttpRequestPtr GetRequest(CStdString& requestId, CStdString& rawRequest);
 };
 
 // Include SimpleHttpRequest for inline implementation
 #include "SimpleHttpRequest.h"
 
 // Inline implementation
-inline IHttpRequestPtr IHttpRequest::GetRequest(CStdString& rawRequest, CStdString& requestId) {
+inline IHttpRequestPtr IHttpRequest::GetRequest(CStdString& requestId, CStdString& rawRequest) {
     if (rawRequest.empty()) {
         return nullptr;
     }
-    return make_ptr<SimpleHttpRequest>(rawRequest, requestId);
+    return make_ptr<SimpleHttpRequest>(requestId, rawRequest);
 }
 
 #endif // IHTTPREQUEST_H
