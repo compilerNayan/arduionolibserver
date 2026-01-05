@@ -1,13 +1,13 @@
 """
-Script to process files, comment out ServerImpl macros, and generate registration code.
+Script to process files, mark @ServerImpl annotations as processed, and generate registration code.
 
 Takes a list of files and library_dir as arguments.
 For each file:
-1. Checks if it has ServerImpl macro
-2. Comments it out if found
-3. Extracts class name and ServerImpl content
+1. Checks if it has @ServerImpl annotation
+2. Marks it as processed (replaces /// @ServerImpl(...) with /* @ServerImpl(...) */) if found
+3. Extracts class name and @ServerImpl content
 
-Then generates RegisterServer calls and updates ServerFactoryInit.h
+Then generates RegisterServer calls and updates ServerProviderInit.h
 """
 
 import sys
@@ -30,7 +30,7 @@ def extract_bracket_content(content):
 
 def check_and_comment_server_impl(file_path):
     """
-    Check if a file contains ServerImpl macro and comment it out.
+    Check if a file contains @ServerImpl annotation and mark it as processed.
     
     Args:
         file_path: Path to the file to process
@@ -59,18 +59,27 @@ def check_and_comment_server_impl(file_path):
         with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
             lines = f.readlines()
         
-        # Pattern to match ServerImpl macro
-        server_impl_pattern = re.compile(r'(\s*)(ServerImpl\s*\(([^)]*)\))')
+        # Pattern to match @ServerImpl annotation
+        # Pattern: /// @ServerImpl("content") or ///@ServerImpl("content") (ignoring whitespace)
+        # Also check for already processed /* @ServerImpl("content") */ pattern
+        server_impl_annotation_pattern = re.compile(r'(\s*)(///\s*@ServerImpl\s*\(([^)]*)\))')
+        server_impl_processed_pattern = re.compile(r'/\*\s*@ServerImpl\s*\([^)]*\)\s*\*/')
         class_pattern = re.compile(r'class\s+(\w+)(?:\s+final)?\s*:\s*public\s+IServer')
         
         modified_lines = lines.copy()
         
-        # Check each line for ServerImpl macro
+        # Check each line for @ServerImpl annotation
         for i, line in enumerate(lines):
-            # Check if current line has ServerImpl macro
-            server_impl_match = server_impl_pattern.search(line)
+            stripped_line = line.strip()
+            
+            # Skip already processed annotations
+            if server_impl_processed_pattern.search(stripped_line):
+                continue
+            
+            # Check if current line has @ServerImpl annotation
+            server_impl_match = server_impl_annotation_pattern.search(stripped_line)
             if server_impl_match:
-                # Check if this ServerImpl is followed by a class that inherits from IServer
+                # Check if this @ServerImpl is followed by a class that inherits from IServer
                 # Look ahead up to 5 lines (to handle comments or blank lines)
                 found_class = False
                 class_name = None
@@ -87,15 +96,18 @@ def check_and_comment_server_impl(file_path):
                     bracket_content = server_impl_match.group(3)
                     extracted_content = extract_bracket_content(bracket_content)
                     
-                    # Check if already commented
-                    stripped = line.lstrip()
-                    if not stripped.startswith('//'):
-                        # Preserve indentation and comment out
+                    # Check if already processed (/* @ServerImpl(...) */)
+                    if not server_impl_processed_pattern.search(stripped_line):
+                        # Preserve indentation and replace with processed marker
                         indent = server_impl_match.group(1)
-                        macro = server_impl_match.group(2)
-                        commented_line = f"{indent}// {macro}\n"
-                        modified_lines[i] = commented_line
-                        result['modified'] = True
+                        annotation_content = server_impl_match.group(2)
+                        # Extract the content part (the part inside parentheses)
+                        content_match = re.search(r'\(([^)]*)\)', annotation_content)
+                        if content_match:
+                            content_part = content_match.group(1)
+                            processed_line = f"{indent}/* @ServerImpl({content_part}) */\n"
+                            modified_lines[i] = processed_line
+                            result['modified'] = True
                     
                     # Store match information
                     # Resolve to full absolute path
@@ -171,7 +183,7 @@ def generate_registration_code(registrations):
         content = reg['server_impl_content']
         # Put content in quotes
         quoted_content = f'"{content}"'
-        lines.append(f'    ServerFactory::RegisterServer<{class_name}>({quoted_content});')
+        lines.append(f'    ServerProvider::RegisterServer<{class_name}>({quoted_content});')
     
     lines.append('    return true;')
     return '\n'.join(lines)
@@ -179,7 +191,7 @@ def generate_registration_code(registrations):
 
 def update_server_factory_init(library_dir, registration_code, include_statements):
     """
-    Update ServerFactoryInit.h with the generated include statements and registration code.
+    Update ServerProviderInit.h with the generated include statements and registration code.
     
     Args:
         library_dir: Path to the library directory
@@ -196,10 +208,10 @@ def update_server_factory_init(library_dir, registration_code, include_statement
     
     try:
         library_dir = Path(library_dir)
-        init_file = library_dir / "include" / "ServerFactoryInit.h"
+        init_file = library_dir / "include" / "ServerProviderInit.h"
         
         if not init_file.exists():
-            result['error'] = f"ServerFactoryInit.h not found at {init_file}"
+            result['error'] = f"ServerProviderInit.h not found at {init_file}"
             return result
         
         # Read the file
@@ -261,7 +273,7 @@ def update_server_factory_init(library_dir, registration_code, include_statement
         result['success'] = True
     
     except Exception as e:
-        result['error'] = f"Error updating ServerFactoryInit.h: {str(e)}"
+        result['error'] = f"Error updating ServerProviderInit.h: {str(e)}"
     
     return result
 
@@ -269,15 +281,15 @@ def update_server_factory_init(library_dir, registration_code, include_statement
 def main():
     """Main function to run the script from command line."""
     if len(sys.argv) < 3:
-        print("Usage: python L3_process_and_register.py <library_dir> <file1> [file2] [file3] ...")
-        print("Example: python L3_process_and_register.py /path/to/lib /path/to/file1.h /path/to/file2.h")
+        # print("Usage: python L3_process_and_register.py <library_dir> <file1> [file2] [file3] ...")
+        # print("Example: python L3_process_and_register.py /path/to/lib /path/to/file1.h /path/to/file2.h")
         sys.exit(1)
     
     library_dir = sys.argv[1]
     file_paths = sys.argv[2:]
     
-    print(f"Processing {len(file_paths)} file(s)...")
-    print(f"Library directory: {library_dir}\n")
+    # print(f"Processing {len(file_paths)} file(s)...")
+    # print(f"Library directory: {library_dir}\n")
     
     all_registrations = []
     processed_count = 0
@@ -285,20 +297,21 @@ def main():
     
     # Process each file
     for file_path in file_paths:
-        print(f"Processing: {file_path}")
+        # print(f"Processing: {file_path}")
         result = check_and_comment_server_impl(file_path)
         
         if result['error']:
-            print(f"  Error: {result['error']}")
+            # print(f"  Error: {result['error']}")
             continue
         
         if result['found']:
             processed_count += 1
             if result['modified']:
                 commented_count += 1
-                print(f"  ✓ Commented out {len(result['matches'])} ServerImpl macro(s)")
+                # print(f"  ✓ Marked {len(result['matches'])} @ServerImpl annotation(s) as processed")
             else:
-                print(f"  ✓ Found {len(result['matches'])} ServerImpl macro(s) (already commented)")
+                # print(f"  ✓ Found {len(result['matches'])} @ServerImpl annotation(s) (already processed)")
+                pass
             
             # Add registrations to the list
             for match in result['matches']:
@@ -307,51 +320,53 @@ def main():
                     'server_impl_content': match['server_impl_content'],
                     'file_path': match.get('file_path', '')  # Include file path
                 })
-                print(f"    - Class: {match['class_name']}, ServerImpl: \"{match['server_impl_content']}\"")
+                # print(f"    - Class: {match['class_name']}, @ServerImpl: \"{match['server_impl_content']}\"")
         else:
-            print(f"  - No ServerImpl macro found")
+            # print(f"  - No @ServerImpl annotation found")
+            pass
     
-    print(f"\n{'=' * 80}")
-    print(f"Summary:")
-    print(f"  Files processed: {processed_count}/{len(file_paths)}")
-    print(f"  Files with macros commented: {commented_count}")
-    print(f"  Total registrations: {len(all_registrations)}")
-    print(f"{'=' * 80}\n")
+    # print(f"\n{'=' * 80}")
+    # print(f"Summary:")
+    # print(f"  Files processed: {processed_count}/{len(file_paths)}")
+    # print(f"  Files with annotations processed: {commented_count}")
+    # print(f"  Total registrations: {len(all_registrations)}")
+    # print(f"{'=' * 80}\n")
     
     if not all_registrations:
-        print("No ServerImpl macros found. Nothing to register.")
+        # print("No @ServerImpl annotations found. Nothing to register.")
         sys.exit(0)
     
     # Generate include statements
-    print("Generating include statements...")
+    # print("Generating include statements...")
     include_statements = generate_include_statements(all_registrations, library_dir)
     if include_statements:
-        print("Generated includes:")
-        print("-" * 80)
-        print(include_statements)
-        print("-" * 80)
+        # print("Generated includes:")
+        # print("-" * 80)
+        # print(include_statements)
+        # print("-" * 80)
+        pass
     
     # Generate registration code
-    print("\nGenerating registration code...")
+    # print("\nGenerating registration code...")
     registration_code = generate_registration_code(all_registrations)
-    print("Generated code:")
-    print("-" * 80)
-    print(registration_code)
-    print("-" * 80)
+    # print("Generated code:")
+    # print("-" * 80)
+    # print(registration_code)
+    # print("-" * 80)
     
-    # Update ServerFactoryInit.h
-    print(f"\nUpdating ServerFactoryInit.h...")
+    # Update ServerProviderInit.h
+    # print(f"\nUpdating ServerProviderInit.h...")
     result = update_server_factory_init(library_dir, registration_code, include_statements)
     
     if result['error']:
-        print(f"Error: {result['error']}")
+        # print(f"Error: {result['error']}")
         sys.exit(1)
     
     if result['success']:
-        print(f"✓ Successfully updated ServerFactoryInit.h")
+        # print(f"✓ Successfully updated ServerProviderInit.h")
         sys.exit(0)
     else:
-        print(f"✗ Failed to update ServerFactoryInit.h")
+        # print(f"✗ Failed to update ServerProviderInit.h")
         sys.exit(1)
 
 

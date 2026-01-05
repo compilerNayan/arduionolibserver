@@ -1,13 +1,13 @@
 """
-Script to check if a file contains ServerImpl macro above a class that inherits from IServer.
+Script to check if a file contains @ServerImpl annotation above a class that inherits from IServer.
 
 The pattern should be:
-    ServerImpl(something_in_brackets)
+    /// @ServerImpl("something_in_quotes")
     class SomeClass : public IServer
 
 or
 
-    ServerImpl(something_in_brackets)
+    /// @ServerImpl("something_in_quotes")
     class SomeClass final : public IServer
 """
 
@@ -18,7 +18,7 @@ from pathlib import Path
 
 def check_server_impl(file_path):
     """
-    Check if a file contains ServerImpl macro above a class that inherits from IServer.
+    Check if a file contains @ServerImpl annotation above a class that inherits from IServer.
     
     Args:
         file_path: Path to the file to check (can be string or Path object)
@@ -49,11 +49,13 @@ def check_server_impl(file_path):
         with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
             lines = f.readlines()
         
-        # Pattern to match ServerImpl macro followed by class declaration
-        # ServerImpl can have any content in brackets (capture the content)
+        # Pattern to match @ServerImpl annotation followed by class declaration
+        # Pattern: /// @ServerImpl("content") or ///@ServerImpl("content") (ignoring whitespace)
+        # Also check for already processed /* @ServerImpl("content") */ pattern
         # Class can have optional 'final' keyword
         # Class must inherit from IServer
-        server_impl_pattern = re.compile(r'ServerImpl\s*\(([^)]*)\)')
+        server_impl_annotation_pattern = re.compile(r'///\s*@ServerImpl\s*\(([^)]*)\)')
+        server_impl_processed_pattern = re.compile(r'/\*\s*@ServerImpl\s*\(([^)]*)\)\s*\*/')
         class_pattern = re.compile(r'class\s+(\w+)(?:\s+final)?\s*:\s*public\s+IServer')
         
         def extract_bracket_content(content):
@@ -70,8 +72,14 @@ def check_server_impl(file_path):
         
         # Check each line and the next line
         for i, line in enumerate(lines):
-            # Check if current line has ServerImpl macro
-            server_impl_match = server_impl_pattern.search(line)
+            stripped_line = line.strip()
+            
+            # Skip already processed annotations
+            if server_impl_processed_pattern.search(stripped_line):
+                continue
+            
+            # Check if current line has @ServerImpl annotation
+            server_impl_match = server_impl_annotation_pattern.search(stripped_line)
             if server_impl_match:
                 # Extract the content inside brackets
                 bracket_content = server_impl_match.group(1)
@@ -91,13 +99,13 @@ def check_server_impl(file_path):
                             'server_impl_line': line.strip(),
                             'class_line': lines[j].strip(),
                             'class_name': class_name,
-                            'server_impl_macro': server_impl_full,
+                            'server_impl_annotation': server_impl_full,
                             'server_impl_content': extracted_content,
                             'file_path': str(full_file_path)  # Full absolute path
                         }
                         result['matches'].append(match_info)
                         result['found'] = True
-                        break  # Found match for this ServerImpl, move to next
+                        break  # Found match for this @ServerImpl, move to next
     
     except Exception as e:
         result['error'] = f"Error processing file: {str(e)}"
@@ -108,29 +116,30 @@ def check_server_impl(file_path):
 def main():
     """Main function to run the script from command line."""
     if len(sys.argv) < 2:
-        print("Usage: python check_server_impl.py <file_path>")
-        print("Example: python check_server_impl.py /path/to/file.h")
+        # print("Usage: python check_server_impl.py <file_path>")
+        # print("Example: python check_server_impl.py /path/to/file.h")
         sys.exit(1)
     
     file_path = sys.argv[1]
     result = check_server_impl(file_path)
     
     if result['error']:
-        print(f"Error: {result['error']}")
+        # print(f"Error: {result['error']}")
         sys.exit(1)
     
     if result['found']:
-        print(f"✓ Found {len(result['matches'])} ServerImpl macro(s) in {file_path}")
+        # print(f"✓ Found {len(result['matches'])} @ServerImpl annotation(s) in {file_path}")
         for i, match in enumerate(result['matches'], 1):
-            print(f"\nMatch {i}:")
-            print(f"  File path: {match['file_path']}")
-            print(f"  Line {match['line_number']}: {match['server_impl_line']}")
-            print(f"  ServerImpl content: {match['server_impl_content']}")
-            print(f"  Class: {match['class_name']}")
-            print(f"  Class line: {match['class_line']}")
+            # print(f"\nMatch {i}:")
+            # print(f"  File path: {match['file_path']}")
+            # print(f"  Line {match['line_number']}: {match['server_impl_line']}")
+            # print(f"  @ServerImpl content: {match['server_impl_content']}")
+            # print(f"  Class: {match['class_name']}")
+            # print(f"  Class line: {match['class_line']}")
+            pass
         sys.exit(0)
     else:
-        print(f"✗ No ServerImpl macro found above IServer class in {file_path}")
+        # print(f"✗ No @ServerImpl annotation found above IServer class in {file_path}")
         sys.exit(1)
 
 
