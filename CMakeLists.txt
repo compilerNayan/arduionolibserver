@@ -12,7 +12,7 @@ include(FetchContent)
 FetchContent_Declare(
     cppcore
     GIT_REPOSITORY https://github.com/compilerNayan/arduinolib0.git
-    GIT_TAG        dev  # Use the main branch
+    GIT_TAG        main  # Use the main branch
 )
 FetchContent_MakeAvailable(cppcore)
 
