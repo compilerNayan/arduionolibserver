@@ -73,14 +73,11 @@ class IServer {
     
     /**
      * Send a message to a client
+     * @param requestId The unique request ID (GUID) to identify the client connection
      * @param message Message to send
-     * @param clientIp IP address of the client (for UDP, required; for TCP, optional if connection exists)
-     * @param clientPort Port of the client (for UDP, required; for TCP, optional if connection exists)
      * @return true if message was sent successfully, false otherwise
      */
-    Public Virtual Bool SendMessage(CStdString& message, 
-                            CStdString& clientIp = "", 
-                            CUInt clientPort = 0) = 0;
+    Public Virtual Bool SendMessage(CStdString& requestId, CStdString& message) = 0;
     
     // ========== Client Information ==========
     
