@@ -7,7 +7,7 @@ For each file:
 2. Marks it as processed (replaces /// @ServerImpl(...) with /* @ServerImpl(...) */) if found
 3. Extracts class name and @ServerImpl content
 
-Then generates RegisterServer calls and updates ServerFactoryInit.h
+Then generates RegisterServer calls and updates ServerProviderInit.h
 """
 
 import sys
@@ -183,7 +183,7 @@ def generate_registration_code(registrations):
         content = reg['server_impl_content']
         # Put content in quotes
         quoted_content = f'"{content}"'
-        lines.append(f'    ServerFactory::RegisterServer<{class_name}>({quoted_content});')
+        lines.append(f'    ServerProvider::RegisterServer<{class_name}>({quoted_content});')
     
     lines.append('    return true;')
     return '\n'.join(lines)
@@ -191,7 +191,7 @@ def generate_registration_code(registrations):
 
 def update_server_factory_init(library_dir, registration_code, include_statements):
     """
-    Update ServerFactoryInit.h with the generated include statements and registration code.
+    Update ServerProviderInit.h with the generated include statements and registration code.
     
     Args:
         library_dir: Path to the library directory
@@ -208,10 +208,10 @@ def update_server_factory_init(library_dir, registration_code, include_statement
     
     try:
         library_dir = Path(library_dir)
-        init_file = library_dir / "include" / "ServerFactoryInit.h"
+        init_file = library_dir / "include" / "ServerProviderInit.h"
         
         if not init_file.exists():
-            result['error'] = f"ServerFactoryInit.h not found at {init_file}"
+            result['error'] = f"ServerProviderInit.h not found at {init_file}"
             return result
         
         # Read the file
@@ -273,7 +273,7 @@ def update_server_factory_init(library_dir, registration_code, include_statement
         result['success'] = True
     
     except Exception as e:
-        result['error'] = f"Error updating ServerFactoryInit.h: {str(e)}"
+        result['error'] = f"Error updating ServerProviderInit.h: {str(e)}"
     
     return result
 
@@ -354,8 +354,8 @@ def main():
     # print(registration_code)
     # print("-" * 80)
     
-    # Update ServerFactoryInit.h
-    # print(f"\nUpdating ServerFactoryInit.h...")
+    # Update ServerProviderInit.h
+    # print(f"\nUpdating ServerProviderInit.h...")
     result = update_server_factory_init(library_dir, registration_code, include_statements)
     
     if result['error']:
@@ -363,10 +363,10 @@ def main():
         sys.exit(1)
     
     if result['success']:
-        # print(f"✓ Successfully updated ServerFactoryInit.h")
+        # print(f"✓ Successfully updated ServerProviderInit.h")
         sys.exit(0)
     else:
-        # print(f"✗ Failed to update ServerFactoryInit.h")
+        # print(f"✗ Failed to update ServerProviderInit.h")
         sys.exit(1)
 
 

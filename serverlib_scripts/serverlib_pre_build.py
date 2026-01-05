@@ -277,7 +277,7 @@ def main():
         # print("Error: Could not determine current library path (serverlib)")
         return
     
-    # print(f"Current library path (for ServerFactoryInit.h): {current_library_path}")
+    # print(f"Current library path (for ServerProviderInit.h): {current_library_path}")
     
     # Get all .h/.hpp files from ALL libraries, not just the current one
     all_library_files = []
@@ -382,18 +382,18 @@ def main():
             # print(registration_code)
             # print("-" * 80)
             
-            # Update ServerFactoryInit.h
-            # print(f"\nUpdating ServerFactoryInit.h...")
+            # Update ServerProviderInit.h
+            # print(f"\nUpdating ServerProviderInit.h...")
             result = update_server_factory_init(current_library_path, registration_code, include_statements)
             
             if result['error']:
                 # print(f"Error: {result['error']}")
                 pass
             elif result['success']:
-                # print(f"✓ Successfully updated ServerFactoryInit.h")
+                # print(f"✓ Successfully updated ServerProviderInit.h")
                 pass
             else:
-                # print(f"✗ Failed to update ServerFactoryInit.h")
+                # print(f"✗ Failed to update ServerProviderInit.h")
                 pass
         else:
             # print("No @ServerImpl annotations found. Nothing to register.")
