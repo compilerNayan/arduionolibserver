@@ -24,7 +24,7 @@ class SimpleHttpRequest : public IHttpRequest {
     Private Map<StdString, StdString> headers_;
     Private Map<StdString, StdString> cookies_;
     Private StdString body_;
-    Private vector<UInt8> bodyBytes_;
+    Private Vector<UInt8> bodyBytes_;
     Private StdString clientIp_;
     Private UInt clientPort_;
     Private ULong timestamp_;
@@ -260,7 +260,7 @@ class SimpleHttpRequest : public IHttpRequest {
         return const_cast<CStdString&>(reinterpret_cast<const CStdString&>(body_));
     }
     
-    Public Virtual const vector<UInt8>& GetBodyBytes() const override {
+    Public Virtual const Vector<UInt8>& GetBodyBytes() const override {
         return bodyBytes_;
     }
     

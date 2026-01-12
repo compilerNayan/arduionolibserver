@@ -57,7 +57,7 @@ class IHttpResponse {
     /**
      * Get the response body as bytes/raw data
      */
-    Public Virtual const vector<UInt8>& GetBodyBytes() const = 0;
+    Public Virtual const Vector<UInt8>& GetBodyBytes() const = 0;
     
     /**
      * Get the Content-Type header value
