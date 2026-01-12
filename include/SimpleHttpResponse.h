@@ -19,8 +19,8 @@ class SimpleHttpResponse : public IHttpResponse {
     Private StdString httpVersion_;
     Private UInt statusCode_;
     Private StdString statusMessage_;
-    Private std_map<StdString, StdString> headers_;
-    Private std_map<StdString, StdString> setCookies_;
+    Private Map<StdString, StdString> headers_;
+    Private Map<StdString, StdString> setCookies_;
     Private StdString body_;
     Private vector<UInt8> bodyBytes_;
     Private ULong timestamp_;
@@ -94,7 +94,7 @@ class SimpleHttpResponse : public IHttpResponse {
         return StdString();
     }
     
-    Public Virtual const std_map<StdString, StdString>& GetHeaders() const override {
+    Public Virtual const Map<StdString, StdString>& GetHeaders() const override {
         return headers_;
     }
     
@@ -135,7 +135,7 @@ class SimpleHttpResponse : public IHttpResponse {
         return (it != setCookies_.end()) ? it->second : StdString();
     }
     
-    Public Virtual const std_map<StdString, StdString>& GetSetCookies() const override {
+    Public Virtual const Map<StdString, StdString>& GetSetCookies() const override {
         return setCookies_;
     }
     

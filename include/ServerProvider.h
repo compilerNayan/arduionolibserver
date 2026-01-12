@@ -13,7 +13,7 @@
 class ServerProvider {
 
     // Static map to store factory functions for each server ID
-    Private Static std_map<StdString, std::function<IServerPtr()>> serverFactories_;
+    Private Static Map<StdString, std::function<IServerPtr()>> serverFactories_;
     
     // Cached singleton instance of the default server
     Private Static IServerPtr defaultServerInstance_;

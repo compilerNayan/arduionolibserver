@@ -20,9 +20,9 @@ class SimpleHttpRequest : public IHttpRequest {
     Private StdString path_;
     Private StdString fullUrl_;
     Private StdString httpVersion_;
-    Private std_map<StdString, StdString> queryParameters_;
-    Private std_map<StdString, StdString> headers_;
-    Private std_map<StdString, StdString> cookies_;
+    Private Map<StdString, StdString> queryParameters_;
+    Private Map<StdString, StdString> headers_;
+    Private Map<StdString, StdString> cookies_;
     Private StdString body_;
     Private vector<UInt8> bodyBytes_;
     Private StdString clientIp_;
@@ -194,7 +194,7 @@ class SimpleHttpRequest : public IHttpRequest {
         return (it != queryParameters_.end()) ? it->second : StdString();
     }
     
-    Public Virtual const std_map<StdString, StdString>& GetQueryParameters() const override {
+    Public Virtual const Map<StdString, StdString>& GetQueryParameters() const override {
         return queryParameters_;
     }
     
@@ -212,7 +212,7 @@ class SimpleHttpRequest : public IHttpRequest {
         return StdString();
     }
     
-    Public Virtual const std_map<StdString, StdString>& GetHeaders() const override {
+    Public Virtual const Map<StdString, StdString>& GetHeaders() const override {
         return headers_;
     }
     
@@ -283,7 +283,7 @@ class SimpleHttpRequest : public IHttpRequest {
         return (it != cookies_.end()) ? it->second : StdString();
     }
     
-    Public Virtual const std_map<StdString, StdString>& GetCookies() const override {
+    Public Virtual const Map<StdString, StdString>& GetCookies() const override {
         return cookies_;
     }
     
