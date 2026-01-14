@@ -33,15 +33,59 @@ class ServerProvider {
     
     Public template<typename ServerType>
     Static Bool RegisterServer(CStdString& serverId) {
+#ifdef ARDUINO
+        Serial.print("[ServerProvider] RegisterServer() called with serverId: ");
+        Serial.println(serverId.c_str());
+#else
+        std::cout << "[ServerProvider] RegisterServer() called with serverId: " << serverId.c_str() << std::endl;
+#endif
+        
         // Check if server ID already exists
         if (serverFactories_.find(StdString(serverId)) != serverFactories_.end()) {
+#ifdef ARDUINO
+            Serial.print("[ServerProvider] WARNING: Server ID '");
+            Serial.print(serverId.c_str());
+            Serial.println("' already exists! Registration failed.");
+#else
+            std::cout << "[ServerProvider] WARNING: Server ID '" << serverId.c_str() << "' already exists! Registration failed." << std::endl;
+#endif
             return false;
         }
         
         // Register factory function that creates an instance of ServerType
         serverFactories_[StdString(serverId)] = []() -> IServerPtr {
-            return make_ptr<ServerType>();
+#ifdef ARDUINO
+            Serial.println("[ServerProvider] Factory function called - creating ServerType instance...");
+#else
+            std::cout << "[ServerProvider] Factory function called - creating ServerType instance..." << std::endl;
+#endif
+            IServerPtr instance = make_ptr<ServerType>();
+            if (instance == nullptr) {
+#ifdef ARDUINO
+                Serial.println("[ServerProvider] ERROR: Factory function returned nullptr!");
+#else
+                std::cout << "[ServerProvider] ERROR: Factory function returned nullptr!" << std::endl;
+#endif
+            } else {
+#ifdef ARDUINO
+                Serial.println("[ServerProvider] Factory function successfully created server instance");
+#else
+                std::cout << "[ServerProvider] Factory function successfully created server instance" << std::endl;
+#endif
+            }
+            return instance;
         };
+        
+#ifdef ARDUINO
+        Serial.print("[ServerProvider] Server '");
+        Serial.print(serverId.c_str());
+        Serial.println("' registered successfully");
+        Serial.print("[ServerProvider] Total registered servers: ");
+        Serial.println(serverFactories_.size());
+#else
+        std::cout << "[ServerProvider] Server '" << serverId.c_str() << "' registered successfully" << std::endl;
+        std::cout << "[ServerProvider] Total registered servers: " << serverFactories_.size() << std::endl;
+#endif
         
         return true;
     }
@@ -165,6 +209,13 @@ class ServerProvider {
 #endif
         
         // Create the server instance using the first factory
+#ifdef ARDUINO
+        Serial.print("[ServerProvider] Calling factory function for server ID: ");
+        Serial.println(serverFactories_.begin()->first.c_str());
+#else
+        std::cout << "[ServerProvider] Calling factory function for server ID: " << serverFactories_.begin()->first.c_str() << std::endl;
+#endif
+        
         defaultServerInstance_ = serverFactories_.begin()->second();
         
         if (defaultServerInstance_ == nullptr) {
