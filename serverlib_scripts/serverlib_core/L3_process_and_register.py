@@ -4,7 +4,7 @@ Script to process files, mark @ServerImpl annotations as processed, and generate
 Takes a list of files and library_dir as arguments.
 For each file:
 1. Checks if it has @ServerImpl annotation
-2. Marks it as processed (replaces /// @ServerImpl(...) with /* @ServerImpl(...) */) if found
+2. Marks it as processed (replaces /* @ServerImpl(...) */ with /*--@ServerImpl(...)--*/) if found
 3. Extracts class name and @ServerImpl content
 
 Then generates RegisterServer calls and updates ServerProviderInit.h
@@ -59,11 +59,10 @@ def check_and_comment_server_impl(file_path):
         with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
             lines = f.readlines()
         
-        # Pattern to match @ServerImpl annotation
-        # Pattern: /// @ServerImpl("content") or ///@ServerImpl("content") (ignoring whitespace)
-        # Also check for already processed /* @ServerImpl("content") */ pattern
-        server_impl_annotation_pattern = re.compile(r'(\s*)(///\s*@ServerImpl\s*\(([^)]*)\))')
-        server_impl_processed_pattern = re.compile(r'/\*\s*@ServerImpl\s*\([^)]*\)\s*\*/')
+        # Pattern to match @ServerImpl annotation (search for /* @ServerImpl("content") */ or /*@ServerImpl("content")*/)
+        # Also check for already processed /*--@ServerImpl("content")--*/ pattern
+        server_impl_annotation_pattern = re.compile(r'(\s*)/\*\s*@ServerImpl\s*\(([^)]*)\)\s*\*/')
+        server_impl_processed_pattern = re.compile(r'/\*--\s*@ServerImpl\s*\([^)]*\)\s*--\*/')
         class_pattern = re.compile(r'class\s+(\w+)(?:\s+final)?\s*:\s*public\s+IServer')
         
         modified_lines = lines.copy()
@@ -93,19 +92,15 @@ def check_and_comment_server_impl(file_path):
                 # Only process if it's followed by a matching class
                 if found_class:
                     # Extract the content inside brackets
-                    bracket_content = server_impl_match.group(3)
+                    bracket_content = server_impl_match.group(2)  # Content inside parentheses
                     extracted_content = extract_bracket_content(bracket_content)
                     
-                    # Check if already processed (/* @ServerImpl(...) */)
+                    # Check if already processed (/*--@ServerImpl(...)--*/)
                     if not server_impl_processed_pattern.search(stripped_line):
                         # Preserve indentation and replace with processed marker
                         indent = server_impl_match.group(1)
-                        annotation_content = server_impl_match.group(2)
-                        # Extract the content part (the part inside parentheses)
-                        content_match = re.search(r'\(([^)]*)\)', annotation_content)
-                        if content_match:
-                            content_part = content_match.group(1)
-                            processed_line = f"{indent}/* @ServerImpl({content_part}) */\n"
+                        content_part = bracket_content  # Content inside parentheses
+                        processed_line = f"{indent}/*--@ServerImpl({content_part})--*/\n"
                             modified_lines[i] = processed_line
                             result['modified'] = True
                     

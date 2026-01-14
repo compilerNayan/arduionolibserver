@@ -2,12 +2,12 @@
 Script to check if a file contains @ServerImpl annotation above a class that inherits from IServer.
 
 The pattern should be:
-    /// @ServerImpl("something_in_quotes")
+    /* @ServerImpl("something_in_quotes") */
     class SomeClass : public IServer
 
 or
 
-    /// @ServerImpl("something_in_quotes")
+    /* @ServerImpl("something_in_quotes") */
     class SomeClass final : public IServer
 """
 
@@ -50,12 +50,12 @@ def check_server_impl(file_path):
             lines = f.readlines()
         
         # Pattern to match @ServerImpl annotation followed by class declaration
-        # Pattern: /// @ServerImpl("content") or ///@ServerImpl("content") (ignoring whitespace)
-        # Also check for already processed /* @ServerImpl("content") */ pattern
+        # Pattern: /* @ServerImpl("content") */ or /*@ServerImpl("content")*/ (ignoring whitespace)
+        # Also check for already processed /*--@ServerImpl("content")--*/ pattern
         # Class can have optional 'final' keyword
         # Class must inherit from IServer
-        server_impl_annotation_pattern = re.compile(r'///\s*@ServerImpl\s*\(([^)]*)\)')
-        server_impl_processed_pattern = re.compile(r'/\*\s*@ServerImpl\s*\(([^)]*)\)\s*\*/')
+        server_impl_annotation_pattern = re.compile(r'/\*\s*@ServerImpl\s*\(([^)]*)\)\s*\*/')
+        server_impl_processed_pattern = re.compile(r'/\*--\s*@ServerImpl\s*\(([^)]*)\)\s*--\*/')
         class_pattern = re.compile(r'class\s+(\w+)(?:\s+final)?\s*:\s*public\s+IServer')
         
         def extract_bracket_content(content):

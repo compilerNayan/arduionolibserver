@@ -2,7 +2,7 @@
 Script to mark @ServerImpl annotation as processed in a given file.
 
 The script finds @ServerImpl annotations above classes that inherit from IServer
-and marks them as processed by replacing /// @ServerImpl(...) with /* @ServerImpl(...) */.
+and marks them as processed by replacing /* @ServerImpl(...) */ with /*--@ServerImpl(...)--*/.
 """
 
 import sys
@@ -41,11 +41,10 @@ def comment_server_impl(file_path, dry_run=False):
         with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
             lines = f.readlines()
         
-        # Pattern to match @ServerImpl annotation
-        # Pattern: /// @ServerImpl("content") or ///@ServerImpl("content") (ignoring whitespace)
-        # Also check for already processed /* @ServerImpl("content") */ pattern
-        server_impl_annotation_pattern = re.compile(r'(\s*)(///\s*@ServerImpl\s*\(([^)]*)\))')
-        server_impl_processed_pattern = re.compile(r'/\*\s*@ServerImpl\s*\([^)]*\)\s*\*/')
+        # Pattern to match @ServerImpl annotation (search for /* @ServerImpl("content") */ or /*@ServerImpl("content")*/)
+        # Also check for already processed /*--@ServerImpl("content")--*/ pattern
+        server_impl_annotation_pattern = re.compile(r'(\s*)/\*\s*@ServerImpl\s*\(([^)]*)\)\s*\*/')
+        server_impl_processed_pattern = re.compile(r'/\*--\s*@ServerImpl\s*\([^)]*\)\s*--\*/')
         class_pattern = re.compile(r'class\s+(\w+)(?:\s+final)?\s*:\s*public\s+IServer')
         
         modified_lines = lines.copy()
@@ -77,12 +76,8 @@ def comment_server_impl(file_path, dry_run=False):
                     if not server_impl_processed_pattern.search(stripped_line):
                         # Preserve indentation and replace with processed marker
                         indent = server_impl_match.group(1)
-                        annotation_content = server_impl_match.group(2)
-                        # Extract the content part (the part inside parentheses)
-                        content_match = re.search(r'\(([^)]*)\)', annotation_content)
-                        if content_match:
-                            content_part = content_match.group(1)
-                            processed_line = f"{indent}/* @ServerImpl({content_part}) */\n"
+                        content_part = server_impl_match.group(2)  # Content inside parentheses
+                        processed_line = f"{indent}/*--@ServerImpl({content_part})--*/\n"
                             modified_lines[i] = processed_line
                             lines_to_comment.append({
                                 'line_number': i + 1,
