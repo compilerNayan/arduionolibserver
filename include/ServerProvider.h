@@ -6,12 +6,6 @@
 #include <functional>
 #include <memory>
 
-#ifdef ARDUINO
-#include <Arduino.h>
-#else
-#include <iostream>
-#endif
-
 /**
  * Provider class for managing server instances
  * Manages server lifecycle and provides singleton access to the default server
@@ -130,56 +124,18 @@ class ServerProvider {
      * @return IServerPtr (shared_ptr) to the default server instance, or nullptr if no servers are registered
      */
     Public Static IServerPtr GetDefaultServer() {
-#ifdef ARDUINO
-        Serial.println("[ServerProvider] GetDefaultServer() called");
-#else
-        std::cout << "[ServerProvider] GetDefaultServer() called" << std::endl;
-#endif
-        
         // If we already have a cached instance, return it
         if (defaultServerInstance_ != nullptr) {
-#ifdef ARDUINO
-            Serial.println("[ServerProvider] Returning cached server instance");
-#else
-            std::cout << "[ServerProvider] Returning cached server instance" << std::endl;
-#endif
             return defaultServerInstance_;
         }
         
         // No cached instance, create one
         if (serverFactories_.empty()) {
-#ifdef ARDUINO
-            Serial.println("[ServerProvider] ERROR: No server factories registered! serverFactories_ is empty.");
-#else
-            std::cout << "[ServerProvider] ERROR: No server factories registered! serverFactories_ is empty." << std::endl;
-#endif
             return nullptr;
         }
         
-#ifdef ARDUINO
-        Serial.print("[ServerProvider] Found ");
-        Serial.print(serverFactories_.size());
-        Serial.println(" server factory(ies), creating server instance from first factory...");
-#else
-        std::cout << "[ServerProvider] Found " << serverFactories_.size() << " server factory(ies), creating server instance from first factory..." << std::endl;
-#endif
-        
         // Create the server instance using the first factory
         defaultServerInstance_ = serverFactories_.begin()->second();
-        
-        if (defaultServerInstance_ == nullptr) {
-#ifdef ARDUINO
-            Serial.println("[ServerProvider] ERROR: Factory returned nullptr server instance!");
-#else
-            std::cout << "[ServerProvider] ERROR: Factory returned nullptr server instance!" << std::endl;
-#endif
-        } else {
-#ifdef ARDUINO
-            Serial.println("[ServerProvider] Successfully created server instance");
-#else
-            std::cout << "[ServerProvider] Successfully created server instance" << std::endl;
-#endif
-        }
         
         return defaultServerInstance_;
     }
