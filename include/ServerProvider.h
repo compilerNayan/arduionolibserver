@@ -120,16 +120,12 @@ class ServerProvider {
     /**
      * Get the default server (first registered server)
      * Returns a singleton instance - the same instance is returned on every call
-     * Automatically starts the server if it's not already running
+     * Note: This method does NOT start the server. The caller is responsible for starting it.
      * @return IServerPtr (shared_ptr) to the default server instance, or nullptr if no servers are registered
      */
     Public Static IServerPtr GetDefaultServer() {
         // If we already have a cached instance, return it
         if (defaultServerInstance_ != nullptr) {
-            // Ensure server is started
-            if (!defaultServerInstance_->IsRunning()) {
-                defaultServerInstance_->Start(DEFAULT_SERVER_PORT);
-            }
             return defaultServerInstance_;
         }
         
@@ -140,13 +136,6 @@ class ServerProvider {
         
         // Create the server instance using the first factory
         defaultServerInstance_ = serverFactories_.begin()->second();
-        
-        if (defaultServerInstance_ != nullptr) {
-            // Start the server if not already running
-            if (!defaultServerInstance_->IsRunning()) {
-                defaultServerInstance_->Start(DEFAULT_SERVER_PORT);
-            }
-        }
         
         return defaultServerInstance_;
     }
