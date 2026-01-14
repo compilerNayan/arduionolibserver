@@ -101,8 +101,8 @@ def check_and_comment_server_impl(file_path):
                         indent = server_impl_match.group(1)
                         content_part = bracket_content  # Content inside parentheses
                         processed_line = f"{indent}/*--@ServerImpl({content_part})--*/\n"
-                            modified_lines[i] = processed_line
-                            result['modified'] = True
+                        modified_lines[i] = processed_line
+                        result['modified'] = True
                     
                     # Store match information
                     # Resolve to full absolute path
