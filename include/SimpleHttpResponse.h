@@ -343,7 +343,7 @@ class SimpleHttpResponse : public IHttpResponse {
     /**
      * Set the request ID (can be set after construction)
      */
-    Public Void SetRequestId(CStdString& requestId) {
+    Public Virtual Void SetRequestId(CStdString& requestId) override {
         requestId_ = StdString(requestId);
     }
 };

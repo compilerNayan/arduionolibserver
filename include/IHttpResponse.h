@@ -227,6 +227,12 @@ class IHttpResponse {
      */
     Public Virtual CStdString& GetRequestId() const = 0;
     
+    /**
+     * Set the request ID (GUID) for this response
+     * Can be called after construction to set the request ID
+     */
+    Public Virtual Void SetRequestId(CStdString& requestId) = 0;
+    
     // ========== Static Factory Method ==========
     
     /**
