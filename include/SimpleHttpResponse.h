@@ -71,6 +71,42 @@ class SimpleHttpResponse : public IHttpResponse {
             headers_["Content-Length"] = std::to_string(body_.length());
         }
     }
+
+    /**
+     * Constructor with status code, headers, and body
+     * Used for creating responses from ResponseEntity<T>
+     */
+    Public SimpleHttpResponse(
+        CStdString& requestId, 
+        CUInt statusCode,
+        CStdString& statusMessage,
+        const Map<StdString, StdString>& headers,
+        CStdString& body
+    ) 
+        : httpVersion_("HTTP/1.1"), statusCode_(statusCode), statusMessage_(statusMessage), timestamp_(0) {
+        requestId_ = requestId;
+        body_ = body;
+        headers_ = headers;
+        timestamp_ = static_cast<ULong>(std::time(nullptr));
+        
+        // Convert body to bytes
+        if (!body_.empty()) {
+            bodyBytes_.reserve(body_.length());
+            for (Size i = 0; i < body_.length(); ++i) {
+                bodyBytes_.push_back(static_cast<UInt8>(body_[i]));
+            }
+        }
+        
+        // Ensure Content-Length header is set
+        if (!headers_.count("Content-Length")) {
+            headers_["Content-Length"] = std::to_string(body_.length());
+        }
+        
+        // Set default Content-Type if not provided
+        if (!headers_.count("Content-Type") && !body_.empty()) {
+            headers_["Content-Type"] = "application/json";
+        }
+    }
     
     Public Virtual CStdString& GetHttpVersion() const override { 
         return const_cast<CStdString&>(reinterpret_cast<const CStdString&>(httpVersion_)); 
@@ -302,6 +338,13 @@ class SimpleHttpResponse : public IHttpResponse {
     
     Public Void SetContentType(CStdString& contentType) {
         headers_["Content-Type"] = StdString(contentType);
+    }
+    
+    /**
+     * Set the request ID (can be set after construction)
+     */
+    Public Void SetRequestId(CStdString& requestId) {
+        requestId_ = StdString(requestId);
     }
 };
 
