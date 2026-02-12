@@ -147,6 +147,12 @@ class IServer {
      * @return Server type enum (TCP, UDP, etc.)
      */
     Public Virtual ServerType GetServerType() const = 0;
+    
+    /**
+     * Get the server ID
+     * @return Server ID as string (e.g. registration key or unique identifier)
+     */
+    Public Virtual StdString GetId() const = 0;
 };
 
 #endif // ISERVER_H
