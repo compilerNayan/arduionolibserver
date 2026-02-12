@@ -110,6 +110,33 @@ class ServerProvider {
     }
     
     /**
+     * Get all server instances (one per registered server type).
+     * Each call creates a new instance from each factory.
+     * @return Vector of IServerPtr (shared_ptr) to server instances
+     */
+    Public Static Vector<IServerPtr> GetAllServers() {
+        Vector<IServerPtr> result;
+        result.reserve(serverFactories_.size());
+        for (auto it = serverFactories_.begin(); it != serverFactories_.end(); ++it) {
+            result.push_back(it->second());
+        }
+        return result;
+    }
+    
+    /**
+     * Get the second server in the list, if it exists.
+     * @return IServerPtr to the second server instance, or nullptr if fewer than two are registered
+     */
+    Public Static IServerPtr GetSecondServer() {
+        if (serverFactories_.size() < 2) {
+            return nullptr;
+        }
+        auto it = serverFactories_.begin();
+        ++it;
+        return it->second();
+    }
+    
+    /**
      * Clear all registered server types
      */
     Public Static Void Clear() {
